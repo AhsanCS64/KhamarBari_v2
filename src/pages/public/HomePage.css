@@ -1,0 +1,82 @@
+/* KhamarBari Modern Farm OS - Homepage Styles */
+
+.home-hero-container {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100vh - 4.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Shimmering gradient for hero highlight text */
+@keyframes text-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #a7f3d0 30%,
+    #fef08a 60%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: text-shimmer 6s ease-in-out infinite;
+}
+
+/* Subtle pulse glow for CTA and highlight elements */
+@keyframes warm-beacon-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(74, 222, 128, 0);
+  }
+}
+
+.beacon-pulse {
+  animation: warm-beacon-pulse 2.5s infinite;
+}
+
+/* Floating micro-bounce */
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.gentle-float {
+  animation: gentle-float 5s ease-in-out infinite;
+}
+
+/* Glassmorphism surfaces */
+.home-glass-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Scrollbar hiding utility for horizontal tabs */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
