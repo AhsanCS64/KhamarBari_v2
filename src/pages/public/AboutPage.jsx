@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Leaf, Users, ShieldCheck, Sprout } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import FoundersSection from '@/components/home/FoundersSection'
 
 export default function AboutPage() {
   const { t } = useTranslation()
@@ -38,6 +39,8 @@ export default function AboutPage() {
           ))}
         </div>
       </section>
+
+      <FoundersSection />
     </div>
   )
 }

@@ -13,6 +13,7 @@ import LiveImpactTicker from '@/components/home/LiveImpactTicker'
 import FeatureBentoGrid from '@/components/home/FeatureBentoGrid'
 import FarmRoiCalculator from '@/components/home/FarmRoiCalculator'
 import InteractiveDayTimeline from '@/components/home/InteractiveDayTimeline'
+import FoundersSection from '@/components/home/FoundersSection'
 import FarmerTestimonials from '@/components/home/FarmerTestimonials'
 import InteractiveFaq from '@/components/home/InteractiveFaq'
 import JoyfulCtaBanner from '@/components/home/JoyfulCtaBanner'
@@ -157,6 +158,9 @@ export default function HomePage() {
       <section id="features" aria-label="Features">
         <FeatureBentoGrid />
       </section>
+
+      {/* About Us · The Founders & Developers */}
+      <FoundersSection />
 
       <FarmRoiCalculator />
       <InteractiveDayTimeline />
