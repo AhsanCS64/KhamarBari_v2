@@ -53,12 +53,12 @@ export default function AppTopbar() {
           <Menu className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-1">
           {farm?.logo ? (
-            <img src={farm.logo} alt="" className="h-10 w-10 rounded-xl object-cover border border-forest-100 shadow-xs" />
+            <img src={farm.logo} alt="" className="h-14 w-14 rounded-xl object-cover border border-forest-200 shadow-xs" />
           ) : (
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-forest-200/50 shadow-[0_2px_10px_rgba(181,230,97,0.35)]">
-              <img src="/sprout.svg" alt="KhamarBari" className="h-7 w-7 drop-shadow-xs" />
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-forest-200/50 shadow-[0_2px_10px_rgba(181,230,97,0.35)]">
+              <img src="/sprout.svg" alt="KhamarBari" className="h-12 w-12 drop-shadow-xs" />
             </div>
           )}
           <div className="hidden sm:block min-w-0">
