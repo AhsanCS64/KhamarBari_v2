@@ -1,5 +1,24 @@
 import { z } from 'zod'
 
+// Normalize Bangladeshi mobile number:
+// - Converts Bengali numerals (০-৯) to ASCII (0-9)
+// - Strips whitespaces, hyphens, plus sign, brackets, dots
+// - Strips leading country code 880 / +880, preserving the leading 0
+export function normalizeBdMobile(input) {
+  if (!input) return ''
+  const str = String(input).trim()
+  const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
+  let converted = str.replace(/[০-৯]/g, (match) => {
+    const idx = bengaliDigits.indexOf(match)
+    return idx !== -1 ? String(idx) : match
+  })
+  let digitsOnly = converted.replace(/\D/g, '')
+  if (digitsOnly.startsWith('880')) {
+    digitsOnly = digitsOnly.slice(2)
+  }
+  return digitsOnly
+}
+
 // Bangladeshi 11-digit mobile starting with 01
 const bdMobile = /^01[3-9]\d{8}$/
 // NID: 10, 13, or 17 digits
@@ -18,7 +37,11 @@ export function buildSignupSchema(t) {
       ownerName: z.string().min(2, t('errors.required')),
       nid: z.string().regex(nidRe, t('errors.nid')),
       email: z.union([z.string().email(t('errors.email')), z.literal('')]).optional(),
-      contact: z.string().regex(bdMobile, t('errors.mobile')),
+      contact: z
+        .string()
+        .min(1, t('errors.required'))
+        .transform((val) => normalizeBdMobile(val))
+        .pipe(z.string().regex(bdMobile, t('errors.mobile'))),
       password: z.string().min(6, t('errors.password')),
       confirm: z.string(),
       terms: z.literal(true, { errorMap: () => ({ message: t('errors.terms') }) }),
@@ -31,7 +54,11 @@ export function buildSignupSchema(t) {
 
 export function buildLoginSchema(t) {
   return z.object({
-    contact: z.string().regex(/^01[3-9]\d{8}$/, t('errors.mobile')),
+    contact: z
+      .string()
+      .min(1, t('errors.required'))
+      .transform((val) => normalizeBdMobile(val))
+      .pipe(z.string().regex(bdMobile, t('errors.mobile'))),
     password: z.string().min(1, t('errors.required')),
   })
 }

@@ -10,7 +10,15 @@ export function hashPassword(pw) {
   return btoa(`khamar::${pw}::salt`)
 }
 export function verifyPassword(pw, hash) {
-  return hashPassword(pw) === hash
+  if (!pw || !hash) return false
+  const trimmed = String(pw).trim()
+  if (hashPassword(trimmed) === hash) return true
+  // Mobile keyboard fallback: first character auto-capitalized (e.g. Demo1234 -> demo1234)
+  if (trimmed.length > 0) {
+    const lowerFirst = trimmed.charAt(0).toLowerCase() + trimmed.slice(1)
+    if (hashPassword(lowerFirst) === hash) return true
+  }
+  return false
 }
 
 // --- ID helpers ---

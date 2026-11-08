@@ -1,18 +1,47 @@
-// Async API-shaped auth service backed by localStorage.
-// Later: replace the internals with fetch() calls to the Express API.
+// Async API-shaped auth service backed by localStorage and optional Vercel cross-device sync.
 import { storage } from './storage'
 import { loadDb, saveDb, uid, hashPassword, verifyPassword } from './mockDb'
+import { normalizeBdMobile } from '@/lib/validators/authSchemas'
 
 const SESSION_KEY = 'session'
 
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms))
 
+async function syncRemoteAccount({ user, farm }) {
+  try {
+    if (typeof window !== 'undefined') {
+      await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user, farm }),
+      })
+    }
+  } catch {
+    /* ignore offline / local fallback */
+  }
+}
+
+async function fetchRemoteAccount(contact) {
+  try {
+    if (typeof window !== 'undefined') {
+      const res = await fetch(`/api/sync?contact=${encodeURIComponent(contact)}`)
+      if (res.ok) {
+        return await res.json()
+      }
+    }
+  } catch {
+    /* ignore offline / local fallback */
+  }
+  return null
+}
+
 // shape: { data, error }
 export async function registerFarm(payload) {
   await delay(600)
+  const normContact = normalizeBdMobile(payload.contact)
   const db = loadDb()
 
-  if (db.users.some((u) => u.contact === payload.contact)) {
+  if (db.users.some((u) => normalizeBdMobile(u.contact) === normContact)) {
     return { data: null, error: 'This contact number is already registered.' }
   }
 
@@ -32,7 +61,7 @@ export async function registerFarm(payload) {
     ownerName: payload.ownerName,
     ownerNid: payload.nid,
     email: payload.email || null,
-    contact: payload.contact,
+    contact: normContact,
     createdAt: new Date().toISOString(),
   }
 
@@ -40,7 +69,7 @@ export async function registerFarm(payload) {
     id: userId,
     farmId,
     name: payload.ownerName,
-    contact: payload.contact,
+    contact: normContact,
     email: payload.email || null,
     passwordHash: hashPassword(payload.password),
     role: 'owner',
@@ -52,15 +81,41 @@ export async function registerFarm(payload) {
   db.users.push(user)
   saveDb(db)
 
+  // Broadcast to remote sync for cross-device access on Vercel
+  syncRemoteAccount({ user, farm }).catch(() => {})
+
   return { data: { farm, user: publicUser(user) }, error: null }
 }
 
 export async function login({ contact, password }) {
-  await delay(500)
+  await delay(400)
+  const normContact = normalizeBdMobile(contact)
+  const rawPw = typeof password === 'string' ? password.trim() : ''
   const db = loadDb()
-  const user = db.users.find((u) => u.contact === contact)
+
+  let user = db.users.find((u) => normalizeBdMobile(u.contact) === normContact)
+
+  // If not found in local localStorage, attempt fetching from Vercel sync store
+  if (!user) {
+    try {
+      const remote = await fetchRemoteAccount(normContact)
+      if (remote && remote.user) {
+        if (!db.users.some((u) => u.id === remote.user.id)) {
+          db.users.push(remote.user)
+        }
+        if (remote.farm && !db.farms.some((f) => f.id === remote.farm.id)) {
+          db.farms.push(remote.farm)
+        }
+        saveDb(db)
+        user = remote.user
+      }
+    } catch {
+      /* ignore remote error */
+    }
+  }
+
   if (!user) return { data: null, error: 'No account found with this contact.' }
-  if (!verifyPassword(password, user.passwordHash)) {
+  if (!verifyPassword(rawPw, user.passwordHash)) {
     return { data: null, error: 'Incorrect password.' }
   }
   const farm = db.farms.find((f) => f.id === user.farmId)

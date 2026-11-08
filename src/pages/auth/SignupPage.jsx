@@ -172,7 +172,14 @@ export default function SignupPage() {
             <Input type="email" {...register('email')} placeholder="you@example.com" />
           </Field>
           <Field label={t('auth.signup.contact')} error={errors.contact?.message}>
-            <Input {...register('contact')} inputMode="tel" placeholder="01712345678" />
+            <Input
+              {...register('contact')}
+              inputMode="tel"
+              placeholder="01712345678"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+            />
           </Field>
         </div>
 

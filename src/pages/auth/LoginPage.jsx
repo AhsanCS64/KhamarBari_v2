@@ -51,6 +51,21 @@ export default function LoginPage() {
     setValue('password', 'demo1234', { shouldValidate: true })
   }
 
+  const quickLogin = async (contact, password) => {
+    setValue('contact', contact, { shouldValidate: true })
+    setValue('password', password, { shouldValidate: true })
+    setSubmitting(true)
+    setServerError('')
+    const { error } = await login({ contact, password })
+    setSubmitting(false)
+    if (error) {
+      setServerError(error)
+      return
+    }
+    const next = params.get('next') || '/dashboard'
+    navigate(next, { replace: true })
+  }
+
   const copyDemo = async () => {
     try {
       await navigator.clipboard.writeText('01700000000 / demo1234')
@@ -76,7 +91,16 @@ export default function LoginPage() {
 
         <div>
           <Label>{t('auth.login.contact')}</Label>
-          <Input {...register('contact')} className="mt-1.5" inputMode="tel" placeholder="01712345678" autoComplete="username" />
+          <Input
+            {...register('contact')}
+            className="mt-1.5"
+            inputMode="tel"
+            placeholder="01712345678"
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
+          />
           {errors.contact && <p className="mt-1 text-xs text-red-600">{errors.contact.message}</p>}
         </div>
 
@@ -92,6 +116,9 @@ export default function LoginPage() {
               type={showPw ? 'text' : 'password'}
               {...register('password')}
               autoComplete="current-password"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
             />
             <button
               type="button"
@@ -110,7 +137,7 @@ export default function LoginPage() {
         </Button>
 
         {/* Demo credentials card */}
-        <div className="login-demo-panel rounded-2xl border p-4 text-xs">
+        <div className="login-demo-panel rounded-2xl border p-4 text-xs shadow-xs">
           <div className="flex items-center justify-between mb-1.5">
             <span className="font-semibold text-forest-800">{t('authExtra.demoCredentials')}</span>
             <button
@@ -124,9 +151,37 @@ export default function LoginPage() {
           </div>
           <p className="text-forest-700/80 font-mono">01700000000 / demo1234</p>
           <p className="mt-1 text-forest-700/60">{t('authExtra.demoNote')}</p>
-          <Button type="button" variant="outline" size="sm" className="mt-2" onClick={fillDemo}>
-            Auto-fill demo
-          </Button>
+          
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="bg-forest hover:bg-forest-600 text-white text-[11px] h-8 px-2.5"
+              disabled={submitting}
+              onClick={() => quickLogin('01700000000', 'demo1234')}
+            >
+              ⚡ Quick Login (Owner)
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="text-[11px] h-8 px-2.5 border-forest-200"
+              disabled={submitting}
+              onClick={() => quickLogin('01800000000', 'demo1234')}
+            >
+              Quick Login (Manager)
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-[11px] h-8 px-2 text-forest-700"
+              onClick={fillDemo}
+            >
+              Fill form
+            </Button>
+          </div>
         </div>
 
         <p className="text-sm text-center text-forest-700/80">

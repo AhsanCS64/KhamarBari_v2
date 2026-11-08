@@ -201,7 +201,11 @@
     "utilities": "Utility Costs",
     "workers": "Workers",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "toggle": "Toggle navigation",
+    "hide": "Hide sidebar",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
   },
   "branch": {
     "all": "All branches",

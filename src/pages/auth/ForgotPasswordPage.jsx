@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { requestPasswordReset, verifyResetOtp, resetPasswordWithOtp } from '@/services/authService'
+import { normalizeBdMobile } from '@/lib/validators/authSchemas'
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation()
@@ -42,7 +43,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setError('')
 
-    const cleanContact = contact.trim()
+    const cleanContact = normalizeBdMobile(contact)
     if (!/^01[3-9]\d{8}$/.test(cleanContact)) {
       setError('Please enter a valid 11-digit Bangladeshi mobile number (e.g. 01712345678).')
       return
@@ -188,10 +189,14 @@ export default function ForgotPasswordPage() {
             <Input
               id="resetContact"
               type="tel"
+              inputMode="tel"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               placeholder="01712345678"
               className="mt-1.5 text-base"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
               autoFocus
             />
           </div>

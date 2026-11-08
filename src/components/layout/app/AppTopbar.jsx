@@ -23,6 +23,8 @@ export default function AppTopbar() {
   const refreshBranches = useAppStore((s) => s.refreshBranches)
   const sidebarOpen = useAppStore((s) => s.sidebarOpen)
   const toggleSidebar = useAppStore((s) => s.toggleSidebar)
+  const sidebarCollapsed = useAppStore((s) => s.sidebarCollapsed)
+  const toggleSidebarCollapsed = useAppStore((s) => s.toggleSidebarCollapsed)
   const [branchOpen, setBranchOpen] = useState(false)
 
   const onLogout = async () => {
@@ -35,7 +37,19 @@ export default function AppTopbar() {
   return (
     <header className="sticky top-0 z-30 h-[4.5rem] border-b border-forest-100/70 bg-cream/85 shadow-[0_3px_18px_rgba(17,45,28,0.04)] backdrop-blur-xl">
       <div className="h-full px-4 flex items-center gap-3">
-        <button className="grid h-10 w-10 place-items-center rounded-xl border border-forest-100 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50 md:hidden" onClick={toggleSidebar} aria-label="Menu" aria-expanded={sidebarOpen}>
+        <button
+          className="grid h-10 w-10 place-items-center rounded-xl border border-forest-100 bg-white text-forest-800 shadow-sm transition-all hover:bg-forest-50 active:scale-95"
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+              toggleSidebar()
+            } else {
+              toggleSidebarCollapsed()
+            }
+          }}
+          aria-label="Toggle navigation"
+          aria-expanded={sidebarOpen}
+          title={t('sidebar.toggle', 'Toggle navigation')}
+        >
           <Menu className="h-5 w-5" />
         </button>
 

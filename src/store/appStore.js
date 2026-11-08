@@ -16,7 +16,24 @@ export const useAppStore = create((set) => ({
     set({ dateRange: range })
   },
 
+  // Mobile drawer state
   sidebarOpen: false,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   closeSidebar: () => set({ sidebarOpen: false }),
+  openSidebar: () => set({ sidebarOpen: true }),
+
+  // Desktop / Tablet collapsible rail state
+  sidebarCollapsed: preferences.sidebarCollapsed || false,
+  toggleSidebarCollapsed: () =>
+    set((s) => {
+      const next = !s.sidebarCollapsed
+      const current = storage.get('preferences', {}) || {}
+      storage.set('preferences', { ...current, sidebarCollapsed: next })
+      return { sidebarCollapsed: next }
+    }),
+  setSidebarCollapsed: (collapsed) => {
+    const current = storage.get('preferences', {}) || {}
+    storage.set('preferences', { ...current, sidebarCollapsed: collapsed })
+    set({ sidebarCollapsed: collapsed })
+  },
 }))
