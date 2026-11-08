@@ -10,7 +10,7 @@ const FOUNDERS = [
     focus: 'AI/ML Engineering and System Architect',
     image: kushalImg || '/photos/kushal.jpg',
     fallback: '/photos/kushal.jpg',
-    icon: Terminal,
+    icon: Compass,
     quote:
       'Empowering grassroots farms with modern technology, precision analytics, and effortless clarity.',
     badge: 'Lead Developer & Co-Founder',
@@ -34,7 +34,7 @@ const FOUNDERS = [
     focus: 'Database Architecture & Core Engineering',
     image: adnanImg || '/photos/adnan.jpg',
     fallback: '/photos/adnan.jpg',
-    icon: Compass,
+    icon: Terminal,
     quote:
       'Bridging modern web engineering with traditional agro practices to build a sustainable farming future.',
     badge: 'Co-Founder & Developer',
