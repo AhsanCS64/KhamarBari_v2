@@ -55,13 +55,15 @@ export default function AppTopbar() {
 
         <div className="flex items-center gap-3 min-w-0">
           {farm?.logo ? (
-            <img src={farm.logo} alt="" className="h-8 w-8 rounded-lg object-cover border border-forest-50" />
+            <img src={farm.logo} alt="" className="h-10 w-10 rounded-xl object-cover border border-forest-100 shadow-xs" />
           ) : (
-            <img src="/sprout.svg" alt="" className="h-8 w-8" />
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-forest-200/50 shadow-[0_2px_10px_rgba(181,230,97,0.35)]">
+              <img src="/sprout.svg" alt="KhamarBari" className="h-7 w-7 drop-shadow-xs" />
+            </div>
           )}
           <div className="hidden sm:block min-w-0">
-            <p className="text-sm font-semibold text-forest-900 truncate max-w-[180px]">{farm?.name}</p>
-            <p className="text-[11px] text-forest-700/60 capitalize">{user?.role}</p>
+            <p className="text-sm font-bold text-forest-900 truncate max-w-[180px]">{farm?.name}</p>
+            <p className="text-[11px] text-forest-700/70 font-medium capitalize">{user?.role}</p>
           </div>
         </div>
 

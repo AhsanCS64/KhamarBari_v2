@@ -199,8 +199,9 @@ const RESET_OTP_KEY = 'auth.reset_otp'
 
 export async function requestPasswordReset(contact) {
   await delay(400)
+  const normContact = normalizeBdMobile(contact)
   const db = loadDb()
-  const user = db.users.find((u) => u.contact === contact)
+  const user = db.users.find((u) => normalizeBdMobile(u.contact) === normContact)
   if (!user) {
     return { data: null, error: 'No account found with this mobile number. Please check or register a new farm.' }
   }
@@ -209,12 +210,12 @@ export async function requestPasswordReset(contact) {
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   const expiresAt = Date.now() + 10 * 60 * 1000 // 10 minutes
 
-  storage.set(RESET_OTP_KEY, { contact, otp, expiresAt })
+  storage.set(RESET_OTP_KEY, { contact: normContact, otp, expiresAt })
 
   return {
     data: {
       ok: true,
-      contact,
+      contact: normContact,
       simulatedOtp: otp,
       userName: user.name,
     },
@@ -224,8 +225,9 @@ export async function requestPasswordReset(contact) {
 
 export async function verifyResetOtp({ contact, otp }) {
   await delay(300)
+  const normContact = normalizeBdMobile(contact)
   const record = storage.get(RESET_OTP_KEY)
-  if (!record || record.contact !== contact) {
+  if (!record || normalizeBdMobile(record.contact) !== normContact) {
     return { data: null, error: 'Verification session expired. Please request a new code.' }
   }
   if (Date.now() > record.expiresAt) {
@@ -239,16 +241,21 @@ export async function verifyResetOtp({ contact, otp }) {
 
 export async function resetPasswordWithOtp({ contact, otp, newPassword }) {
   await delay(500)
-  const verifyRes = await verifyResetOtp({ contact, otp })
+  const normContact = normalizeBdMobile(contact)
+  const verifyRes = await verifyResetOtp({ contact: normContact, otp })
   if (verifyRes.error) return verifyRes
 
   const db = loadDb()
-  const userIdx = db.users.findIndex((u) => u.contact === contact)
+  const userIdx = db.users.findIndex((u) => normalizeBdMobile(u.contact) === normContact)
   if (userIdx < 0) return { data: null, error: 'User not found.' }
 
   db.users[userIdx].passwordHash = hashPassword(newPassword)
   saveDb(db)
   storage.remove(RESET_OTP_KEY)
+
+  // Broadcast updated password to remote sync for cross-device consistency
+  const farm = db.farms.find((f) => f.id === db.users[userIdx].farmId)
+  syncRemoteAccount({ user: db.users[userIdx], farm }).catch(() => {})
 
   return { data: { success: true }, error: null }
 }

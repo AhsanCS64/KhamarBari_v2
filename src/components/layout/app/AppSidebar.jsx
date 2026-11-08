@@ -76,8 +76,8 @@ function SidebarContent({
           title={t('brand.name')}
         >
           {/* Brand Icon */}
-          <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-white/30 shadow-[0_4px_16px_rgba(181,230,97,0.25)] transition-all duration-300 group-hover:-rotate-3 group-hover:scale-105">
-            <img src="/sprout.svg" alt="KhamarBari" className="h-6 w-6 drop-shadow-xs" />
+          <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-white/30 shadow-[0_4px_16px_rgba(181,230,97,0.3)] transition-all duration-300 group-hover:-rotate-3 group-hover:scale-105">
+            <img src="/sprout.svg" alt="KhamarBari" className="h-7.5 w-7.5 drop-shadow-xs" />
           </span>
 
           {!collapsed && (
