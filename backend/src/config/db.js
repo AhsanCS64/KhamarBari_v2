@@ -1,23 +1,40 @@
+
 import mongoose from 'mongoose'
 import { env } from './env.js'
 
+let connectionPromise = null
+
 export async function connectDB() {
-  try {
-    mongoose.set('strictQuery', true)
-    await mongoose.connect(env.mongodbUri, {
-      serverSelectionTimeoutMS: 10000,
-    })
-    const { host, name } = mongoose.connection
-    console.log(`✓ MongoDB connected: ${host}/${name}`)
-  } catch (err) {
-    console.error('✗ MongoDB connection failed:', err.message)
-    process.exit(1)
+  mongoose.set('strictQuery', true)
+
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection
   }
 
-  mongoose.connection.on('disconnected', () => {
-    console.warn('⚠ MongoDB disconnected')
-  })
-  mongoose.connection.on('reconnected', () => {
-    console.log('✓ MongoDB reconnected')
-  })
+  if (!connectionPromise) {
+    connectionPromise = mongoose.connect(env.mongodbUri, {
+      serverSelectionTimeoutMS: 15000,
+      maxPoolSize: 10,
+    })
+  }
+
+  try {
+    await connectionPromise
+    console.log(
+      `✓ MongoDB connected: ${mongoose.connection.host}/${mongoose.connection.name}`
+    )
+    return mongoose.connection
+  } catch (err) {
+    connectionPromise = null
+    console.error('✗ MongoDB connection failed:', err)
+    throw err
+  }
 }
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠ MongoDB disconnected')
+})
+
+mongoose.connection.on('error', (err) => {
+  console.error('✗ MongoDB error:', err)
+})
