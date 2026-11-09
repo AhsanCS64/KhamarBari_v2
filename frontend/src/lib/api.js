@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/store/authStore'
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '')
+const DEFAULT_API_URL = import.meta.env.DEV ? 'http://localhost:5000/api' : '/api'
+const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/+$/, '')
 
 function normalizeIds(value) {
   if (Array.isArray(value)) return value.map(normalizeIds)

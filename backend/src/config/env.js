@@ -5,9 +5,9 @@ const required = ['MONGODB_URI', 'JWT_SECRET']
 const missing = required.filter((k) => !process.env[k])
 
 if (missing.length > 0) {
-  console.error(`✗ Missing required env vars: ${missing.join(', ')}`)
-  console.error('  Copy .env.example → .env and fill in the values.')
-  process.exit(1)
+  throw new Error(
+    `Missing required environment variables: ${missing.join(', ')}. See backend/.env.example.`
+  )
 }
 
 export const env = {
