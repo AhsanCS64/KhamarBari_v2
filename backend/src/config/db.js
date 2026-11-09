@@ -1,46 +1,18 @@
-
 import mongoose from 'mongoose'
 import { env } from './env.js'
 
 <<<<<<< HEAD
+export async function connectDB() {
+  try {
+    mongoose.set('strictQuery', true)
+    await mongoose.connect(env.mongodbUri, {
+=======
 let connectionPromise
 
-=======
-let connectionPromise = null
-
-export async function connectDB() {
-  mongoose.set('strictQuery', true)
-
-  if (mongoose.connection.readyState === 1) {
-    return mongoose.connection
-  }
-
-  if (!connectionPromise) {
-    connectionPromise = mongoose.connect(env.mongodbUri, {
-      serverSelectionTimeoutMS: 15000,
-      maxPoolSize: 10,
-    })
-  }
-
-  try {
-    await connectionPromise
-    console.log(
-      `✓ MongoDB connected: ${mongoose.connection.host}/${mongoose.connection.name}`
-    )
-    return mongoose.connection
-  } catch (err) {
-    connectionPromise = null
-    console.error('✗ MongoDB connection failed:', err)
-    throw err
-  }
-}
-
->>>>>>> c5748f7d053bc777c26c9b190e5663f302ab6186
 mongoose.connection.on('disconnected', () => {
   console.warn('⚠ MongoDB disconnected')
 })
 
-<<<<<<< HEAD
 mongoose.connection.on('reconnected', () => {
   console.log('✓ MongoDB reconnected')
 })
@@ -52,25 +24,24 @@ export function connectDB() {
   mongoose.set('strictQuery', true)
   connectionPromise = mongoose
     .connect(env.mongodbUri, {
+>>>>>>> parent of 6d150e6 (Vercel)
       serverSelectionTimeoutMS: 10000,
-      maxPoolSize: 10,
     })
-    .then(() => {
-      const { host, name } = mongoose.connection
-      console.log(`✓ MongoDB connected: ${host}/${name}`)
-    })
-    .catch((error) => {
-      console.error('✗ MongoDB connection failed:', error.message)
-      throw error
-    })
-    .finally(() => {
-      connectionPromise = undefined
-    })
+    const { host, name } = mongoose.connection
+    console.log(`✓ MongoDB connected: ${host}/${name}`)
+  } catch (err) {
+    console.error('✗ MongoDB connection failed:', err.message)
+    process.exit(1)
+  }
 
-  return connectionPromise
-}
+<<<<<<< HEAD
+  mongoose.connection.on('disconnected', () => {
+    console.warn('⚠ MongoDB disconnected')
+  })
+  mongoose.connection.on('reconnected', () => {
+    console.log('✓ MongoDB reconnected')
+  })
 =======
-mongoose.connection.on('error', (err) => {
-  console.error('✗ MongoDB error:', err)
-})
->>>>>>> c5748f7d053bc777c26c9b190e5663f302ab6186
+  return connectionPromise
+>>>>>>> parent of 6d150e6 (Vercel)
+}
