@@ -103,7 +103,7 @@ export default function AuthLayout({ children, title, subtitle, side = 'illustra
         {/* Top: brand mark */}
         <Link to="/" className="relative z-10 flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-2xl border border-white/35 bg-white/15 shadow-lg backdrop-blur-md">
-            <img src="/sprout.svg" alt="" className="h-8 w-8 brightness-0 invert" />
+            <img src="/sprout.svg" alt="" className="h-8 w-8" />
           </span>
           <span className="text-xl font-bold tracking-wide">KhamarBari</span>
         </Link>
