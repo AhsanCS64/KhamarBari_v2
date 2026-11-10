@@ -1,125 +1,198 @@
+
 import { useEffect, useRef } from 'react'
 
 export default function CursorPollenTrail({ mood = 'morning' }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
-    // Only run on non-touch desktop devices
-    if (typeof window === 'undefined' || window.matchMedia('(hover: none)').matches) {
-      return
-    }
-
-    // Check for reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (
+      typeof window === 'undefined' ||
+      window.matchMedia('(hover: none)').matches ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
       return
     }
 
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
+
+    const ctx = canvas.getContext('2d', { alpha: true })
     if (!ctx) return
+
+    const parent = canvas.parentElement
+    if (!parent) return
 
     let animationFrameId
     let particles = []
-    let mouse = { x: -100, y: -100, lastX: -100, lastY: -100, speed: 0 }
+    let lastFrame = 0
+    let lastSpawn = 0
+
+    const MAX_PARTICLES = 65
+    const PARTICLE_SPACING = 7
+    const FRAME_INTERVAL = 1000 / 60
+
+    const mouse = {
+      x: -100,
+      y: -100,
+      lastX: -100,
+      lastY: -100,
+      active: false,
+    }
+
+    const palettes = {
+      meadow: ['110, 231, 168', '253, 224, 71'],
+      harvest: ['251, 191, 36', '245, 158, 11'],
+      dusk: ['45, 212, 191', '254, 240, 138'],
+      morning: ['254, 215, 102', '167, 243, 208'],
+    }
+
+    const palette = palettes[mood] || palettes.morning
+
+    const random = (min, max) => Math.random() * (max - min) + min
 
     const resize = () => {
-      if (!canvas) return
-      canvas.width = canvas.parentElement?.offsetWidth || window.innerWidth
-      canvas.height = canvas.parentElement?.offsetHeight || window.innerHeight
-    }
-    resize()
-    window.addEventListener('resize', resize)
+      const rect = parent.getBoundingClientRect()
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
 
-    // Palette per mood
-    const getParticleColor = () => {
-      switch (mood) {
-        case 'meadow':
-          return Math.random() > 0.5 ? 'rgba(110, 231, 168, ' : 'rgba(253, 224, 71, '
-        case 'harvest':
-          return Math.random() > 0.4 ? 'rgba(251, 191, 36, ' : 'rgba(245, 158, 11, '
-        case 'dusk':
-          return Math.random() > 0.5 ? 'rgba(45, 212, 191, ' : 'rgba(254, 240, 138, '
-        case 'morning':
-        default:
-          return Math.random() > 0.5 ? 'rgba(254, 215, 102, ' : 'rgba(167, 243, 208, '
-      }
+      canvas.width = Math.round(rect.width * dpr)
+      canvas.height = Math.round(rect.height * dpr)
+
+      canvas.style.width = `${rect.width}px`
+      canvas.style.height = `${rect.height}px`
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
+
+    resize()
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(resize)
+        : null
+
+    resizeObserver?.observe(parent)
 
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect()
+
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
 
-      const dx = x - mouse.lastX
-      const dy = y - mouse.lastY
-      const dist = Math.hypot(dx, dy)
+      if (!mouse.active) {
+        mouse.x = mouse.lastX = x
+        mouse.y = mouse.lastY = y
+        mouse.active = true
+        return
+      }
 
-      mouse.speed = dist
+      const dx = x - mouse.x
+      const dy = y - mouse.y
+      const distance = Math.hypot(dx, dy)
+
       mouse.lastX = mouse.x
       mouse.lastY = mouse.y
       mouse.x = x
       mouse.y = y
 
-      // Emit particles on movement (spawn rate proportional to movement, max 3 per event)
-      if (dist > 3 && particles.length < 50) {
-        const count = Math.min(Math.floor(dist / 8) + 1, 3)
-        for (let i = 0; i < count; i++) {
-          particles.push({
-            x: x + (Math.random() - 0.5) * 16,
-            y: y + (Math.random() - 0.5) * 16,
-            vx: (Math.random() - 0.5) * 1.2 + dx * 0.04,
-            vy: (Math.random() - 0.5) * 1.2 - Math.random() * 0.8,
-            radius: Math.random() * 2.2 + 1,
-            colorBase: getParticleColor(),
-            alpha: Math.random() * 0.55 + 0.4,
-            decay: Math.random() * 0.015 + 0.01,
-          })
-        }
+      if (distance < 3 || particles.length >= MAX_PARTICLES) return
+
+      const count = Math.min(
+        Math.ceil(distance / PARTICLE_SPACING),
+        3,
+        MAX_PARTICLES - particles.length
+      )
+
+      for (let i = 0; i < count; i++) {
+        const progress = (i + 1) / count
+
+        particles.push({
+          x: mouse.lastX + dx * progress + random(-5, 5),
+          y: mouse.lastY + dy * progress + random(-5, 5),
+
+          vx: random(-0.45, 0.45) + dx * 0.012,
+          vy: random(-0.8, 0.3) + dy * 0.008,
+
+          radius: random(0.9, 2.5),
+          alpha: random(0.45, 0.85),
+          decay: random(0.009, 0.017),
+
+          drift: random(-0.3, 0.3),
+          phase: random(0, Math.PI * 2),
+
+          color: palette[Math.floor(Math.random() * palette.length)],
+        })
       }
     }
 
-    const parent = canvas.parentElement
-    if (parent) {
-      parent.addEventListener('mousemove', handleMouseMove)
-    }
+    parent.addEventListener('mousemove', handleMouseMove, {
+      passive: true,
+    })
 
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    const render = (timestamp) => {
+      animationFrameId = requestAnimationFrame(render)
+
+      if (timestamp - lastFrame < FRAME_INTERVAL) return
+
+      const delta = Math.min(
+        (timestamp - (lastFrame || timestamp)) / 16.67,
+        2
+      )
+
+      lastFrame = timestamp
+
+      const width = canvas.clientWidth
+      const height = canvas.clientHeight
+
+      ctx.clearRect(0, 0, width, height)
 
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i]
-        p.x += p.vx
-        p.y += p.vy
-        p.vy -= 0.015 // gentle buoyancy like dandelion fluff
-        p.alpha -= p.decay
+
+        p.x += p.vx * delta
+        p.y += p.vy * delta
+
+        p.vy -= 0.012 * delta
+        p.vx += p.drift * 0.002 * delta
+        p.phase += 0.035 * delta
+
+        p.x += Math.sin(p.phase) * 0.12 * delta
+        p.alpha -= p.decay * delta
 
         if (p.alpha <= 0) {
-          particles.splice(i, 1)
+          particles[i] = particles[particles.length - 1]
+          particles.pop()
           continue
         }
 
-        ctx.save()
+        const alpha = Math.max(0, p.alpha)
+
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2)
-        ctx.fillStyle = `${p.colorBase}${p.alpha})`
-        ctx.shadowBlur = 8
-        ctx.shadowColor = `${p.colorBase}0.8)`
-        ctx.fill()
-        ctx.restore()
-      }
 
-      animationFrameId = requestAnimationFrame(render)
+        ctx.fillStyle = `rgba(${p.color}, ${alpha})`
+        ctx.fill()
+
+        // Subtle glow without expensive shadowBlur per particle.
+        if (p.radius > 1.5) {
+          ctx.beginPath()
+          ctx.arc(p.x, p.y, p.radius * 2.2, 0, Math.PI * 2)
+
+          ctx.fillStyle = `rgba(${p.color}, ${alpha * 0.12})`
+          ctx.fill()
+        }
+      }
     }
 
-    render()
+    animationFrameId = requestAnimationFrame(render)
 
     return () => {
       cancelAnimationFrame(animationFrameId)
-      window.removeEventListener('resize', resize)
-      if (parent) {
-        parent.removeEventListener('mousemove', handleMouseMove)
-      }
+
+      resizeObserver?.disconnect()
+
+      parent.removeEventListener('mousemove', handleMouseMove)
+
+      particles.length = 0
     }
   }, [mood])
 

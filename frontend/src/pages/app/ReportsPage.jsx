@@ -56,7 +56,7 @@ export default function ReportsPage() {
     let cancelled = false
     setLoading(true)
     setError('')
-    const params = { farmId: farm.id, branchId: selectedBranchId, dateFrom, dateTo }
+    const params = { farmId: farm?.id, branchId: selectedBranchId, dateFrom, dateTo }
 
     Promise.all([
       getOverview(params),
@@ -64,7 +64,7 @@ export default function ReportsPage() {
       getExpensesBreakdown(params),
       getSalesReport(params),
       getProductionReport(params),
-      getInventoryReport({ farmId: farm.id, branchId: selectedBranchId }),
+      getInventoryReport(params),
       getWorkersReport(params),
     ])
       .then(([ov, pl, ex, sa, pr, iv, wk]) => {
@@ -93,7 +93,7 @@ export default function ReportsPage() {
       })
 
     return () => { cancelled = true }
-  }, [farm.id, selectedBranchId, dateFrom, dateTo])
+  }, [farm?.id, selectedBranchId, dateFrom, dateTo])
 
   const exportCsv = () => {
     let header = []

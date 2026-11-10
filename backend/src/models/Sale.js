@@ -7,6 +7,7 @@ const saleSchema = new mongoose.Schema(
     invoiceNo: { type: String, required: true },
     itemType: { type: String, required: true },
     animalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Animal', default: null },
+    enclosureId: { type: mongoose.Schema.Types.ObjectId, ref: 'Enclosure', default: null },
     description: { type: String, default: '' },
     date: { type: String, required: true },
     quantity: { type: Number, required: true, min: 0 },

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -49,6 +49,15 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState('')
 
   const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    setName(user?.name || '')
+    setContact(user?.contact || '')
+    setEmail(user?.email || '')
+    setRoleTitle(user?.roleTitle || 'Founder & Farm Operator')
+    setBio(user?.bio || '')
+    setAvatar(user?.avatar || '')
+  }, [user])
 
   // Handle local image file upload & conversion to base64
   const handleFileUpload = (e) => {

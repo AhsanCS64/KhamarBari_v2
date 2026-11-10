@@ -9,7 +9,9 @@
     "contact": "Contact Us",
     "signup": "Sign Up",
     "login": "Login",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "common": {
     "getStarted": "Get Started",
@@ -27,12 +29,319 @@
     "prev": "Prev",
     "next": "Next"
   },
+  "language": {
+    "toggle": "Change language"
+  },
   "hero": {
     "title": "Run your farm, the modern way.",
     "subtitle": "Track animals, expenses, production, inventory and workers — across every branch, from one clean dashboard.",
     "ctaPrimary": "Get Started Free",
     "ctaSecondary": "See How It Works",
     "badge": "Built for real farms in Bangladesh"
+  },
+  "home": {
+    "hero": {
+      "kicker": "Next-Gen Agricultural Intelligence",
+      "titleStart": "Run your farm with",
+      "titleHighlight": "joy, clarity",
+      "titleEnd": "& modern power.",
+      "description": "Track livestock health, daily milk & egg yields, feed inventory, workers, and multi-branch profits — from one calm, modern dashboard built for Bangladesh.",
+      "scopeTitle": "Your farm, in one clear view",
+      "scopeDescription": "Livestock, production, inventory, workers, and finances"
+    },
+    "mood": {
+      "atmosphere": "Atmosphere",
+      "morning": "Morning Dew",
+      "meadow": "Lush Meadow",
+      "harvest": "Golden Harvest",
+      "dusk": "Firefly Dusk"
+    },
+    "scene": {
+      "livingPasture": "Living Pasture",
+      "health": "Health: {{percent}}%",
+      "switchTo": "Switch to {{mood}}",
+      "mute": "Mute ambience",
+      "play": "Play ambience",
+      "scatterFeed": "Scatter Feed",
+      "scatterFeedTitle": "Scatter feed to delight all animals",
+      "celebrationTitle": "Pasture Celebration! 🌾",
+      "celebrationMessage": "All animals are happily feeding on fresh, organic grains!",
+      "dismiss": "Dismiss",
+      "clickStory": "Click any animal, barn, or pond to see their story!",
+      "bioflocPond": "Biofloc Pond",
+      "deltaBreeze": "Delta Breeze",
+      "migratoryBirds": "3 Migratory",
+      "tilapiaActive": "Tilapia Active",
+      "sky": {
+        "morning": "Soft morning light",
+        "meadow": "Beneath the open sky",
+        "harvest": "Golden harvest light",
+        "dusk": "Fireflies at dusk"
+      },
+      "stories": {
+        "barn": {
+          "title": "Cozy Main Barn",
+          "message": "Shelters 40 milking cows and stored fresh sweet clover hay."
+        },
+        "house": {
+          "title": "Farmer Cottage",
+          "message": "Family home since 1994. Fresh chai is brewing on the stove!"
+        },
+        "coop": {
+          "title": "Hen House & Nesting Boxes",
+          "message": "Fresh straw nests. Egg collection is 98% Grade A!"
+        },
+        "goatshed": {
+          "title": "Goat Pavilion",
+          "message": "Raised slatted wooden floor keeping goats dry and lively."
+        },
+        "pond": {
+          "title": "Sparkling Duck Pond",
+          "message": "Oxygenated earthen pond home to ducks, tilapia & freshwater lilies."
+        },
+        "cow": {
+          "title": "Laxmi the Deshi-Holstein Cow",
+          "message": "Produces 18 litres of creamy milk daily. Loves fresh napier grass!"
+        },
+        "goat": {
+          "title": "Chhobi the Black Bengal Goat",
+          "message": "Agile, playful & proud. Bengal goats are world-famous for premium quality!"
+        },
+        "sheep": {
+          "title": "Megh the Garole Sheep",
+          "message": "Fluffy cloud wool, calm demeanor. Adapted to riverine pasturelands."
+        },
+        "chicken": {
+          "title": "Rupa the Deshi Hen & Chicks",
+          "message": "Freerange foraging with 2 fluffy chicks. Zero antibiotics, pure vitality!"
+        }
+      }
+    },
+    "features": {
+      "kicker": "Engineered for modern farm operators",
+      "titleStart": "Everything your farm needs to",
+      "titleHighlight": "thrive with clarity",
+      "description": "One synchronized platform managing animals, inventory, finances and people — with real-time reporting that actually turns a profit.",
+      "habitat": {
+        "category": "01 / HABITAT OS",
+        "title": "Animal Lifecycle & Habitats",
+        "description": "Track full lifecycle across breeds, rooms, stanchion lines and biofloc ponds. Medical histories, vaccinations, weights and breeding cycles.",
+        "utilization": "Active Habitat Utilization",
+        "capacity": "88.4% Capacity",
+        "cows": "🐄 Holstein & Sahiwal: 142",
+        "hens": "🐔 Sonali Layers: 8,400",
+        "fish": "🐟 Tilapia & Carp: 6 Ponds"
+      },
+      "branches": {
+        "category": "02 / MULTI-BRANCH",
+        "title": "Multi-Branch Central Command",
+        "description": "Manage separate farm locations across Bangladesh from one consolidated owner dashboard. Individual manager permissions and unified P&L.",
+        "rangpur": "Rangpur Dairy & Biofloc",
+        "gazipur": "Gazipur Poultry Complex",
+        "bogura": "Bogura Agro & Cattle",
+        "sylhet": "Sylhet Organic Meadows",
+        "optimal": "Optimal",
+        "active": "Active",
+        "healthy": "Healthy",
+        "peak": "Peak",
+        "eggsPerDay": "14,500 Eggs/day",
+        "rangpurProduction": "1,200 L/day",
+        "gazipurProduction": "14,500 Eggs/day",
+        "boguraProduction": "850 L/day",
+        "sylhetProduction": "420 L/day"
+      },
+      "cashflow": {
+        "category": "03 / CASHFLOW",
+        "title": "Precision Taka Flow",
+        "description": "Categorize every expense from feed to diesel. Track payments and print bank-ready audited P&L summaries.",
+        "margin": "Avg. Net Margin",
+        "feed": "Feed & Supplies",
+        "labor": "Labor & Wages"
+      },
+      "harvest": {
+        "category": "04 / HARVEST",
+        "title": "Production Yield",
+        "description": "Log milk liters, egg crates, crop sacks and pond biomass by morning/evening sessions with quality grading.",
+        "quality": "Grade A Quality",
+        "zeroSpoilage": "Zero spoilage recorded"
+      },
+      "inventory": {
+        "category": "05 / INVENTORY",
+        "title": "Smart Stock Sentry",
+        "description": "Never run out of feed or discover expired medicines. Automated threshold alerts sent directly to farm managers.",
+        "warning": "Low Stock Threshold Warning",
+        "reserve": "Layer Feed Shed 1: 3 days reserve left"
+      },
+      "workers": {
+        "category": "06 / WORKFORCE",
+        "title": "Workers & Attendance",
+        "description": "Daily shift logs, salary advances, overtime calculation and direct bKash wage disbursements without headache.",
+        "active": "32 Active Farmhands",
+        "present": "100% Present",
+        "payout": "Wages ready for 1-click payout"
+      }
+    },
+    "founders": {
+      "eyebrow": "The People Behind KhamarBari",
+      "title": "Built by Visionaries.",
+      "titleHighlight": "Driven by Purpose.",
+      "description": "Meet the creators and engineers behind KhamarBari. United by a vision to modernize agriculture in Bangladesh, we build intelligent technology that makes everyday farming simpler, smarter, and more sustainable.",
+      "founder": "Founder {{number}}",
+      "cofounder": "Co-Founder",
+      "kushal": {
+        "role": "Co-Founder & Lead Architect",
+        "focus": "AI/ML Engineering and System Architect",
+        "quote": "Empowering grassroots farms with modern technology, precision analytics, and effortless clarity.",
+        "badge": "Lead Developer & Co-Founder"
+      },
+      "heme": {
+        "role": "Co-Founder & Full-Stack Developer",
+        "focus": "Product Innovation & UX Engineering",
+        "quote": "Designing intuitive, resilient tools that turn complex agricultural operations into calm daily joy.",
+        "badge": "Co-Founder & Developer"
+      },
+      "adnan": {
+        "role": "Co-Founder & Software Engineer",
+        "focus": "Database Architecture & Core Engineering",
+        "quote": "Bridging modern web engineering with traditional agro practices to build a sustainable farming future.",
+        "badge": "Co-Founder & Developer"
+      },
+      "expertise": "Area of Expertise",
+      "team": "KhamarBari Team",
+      "closing": "Proudly Made in Bangladesh",
+      "closingDescription": "Designed, architected, and built by Adnan, Heme, and Kushal to bring modern software technology to livestock and agriculture."
+    },
+    "roi": {
+      "kicker": "Interactive Savings Simulator",
+      "title": "See how much your farm will save every month",
+      "description": "Adjust the sliders to match your current setup and discover the exact time and money KhamarBari frees up for you.",
+      "focus": "Primary Farm Focus",
+      "types": {
+        "dairy": "Dairy",
+        "dairyDescription": "Cattle & Goats",
+        "poultry": "Poultry",
+        "poultryDescription": "Broiler & Layer",
+        "aqua": "Fisheries",
+        "aquaDescription": "Ponds & Biofloc",
+        "mixed": "Mixed",
+        "mixedDescription": "Multi-Sector"
+      },
+      "flockSize": "Flock Size (in hundreds)",
+      "animals": "Animals / Habitats",
+      "birds": "x 100 birds",
+      "headcount": "headcount",
+      "branches": "Active Farm Branches",
+      "location_one": "Location",
+      "location_other": "Locations",
+      "branch_one": "Branch",
+      "branch_other": "Branches",
+      "estimatedReturn": "Estimated Monthly Return",
+      "lossPrevented": "Monthly Loss & Waste Prevented",
+      "month": "/ month",
+      "timeFreed": "Time Freed From Tedious Paperwork",
+      "hours": "hrs / month",
+      "marginSurge": "Projected Margin Surge",
+      "unlock": "Unlock These Savings Now",
+      "trial": "Free 14-day setup · No payment info required"
+    },
+    "timeline": {
+      "kicker": "A calmer, more profitable routine",
+      "title": "A typical day powered by KhamarBari",
+      "description": "From the first morning milk pail to peaceful evening rest, see how intuitive farm software transforms your daily rhythm.",
+      "steps": {
+        "dawn": {
+          "time": "06:00 AM",
+          "title": "Dawn Milking & Morning Harvest",
+          "badge": "Morning Routine",
+          "description": "Farmhands record morning milk yields, egg crate counts, and pond water temperature in 30 seconds on their phone.",
+          "highlight": "Zero lost data, zero messy notebooks on wet barn floors.",
+          "milk": "Morning Milk Collected",
+          "eggs": "Egg Trays Stacked",
+          "logged": "Logged via Phone",
+          "milkValue": "480 Litres",
+          "eggsValue": "120 Trays",
+          "loggedValue": "06:14 AM"
+        },
+        "noon": {
+          "time": "11:30 AM",
+          "title": "Precision Feed & Vaccine Sentry",
+          "badge": "Midday Optimization",
+          "description": "Smart algorithms calculate exact feed conversion ratios and send instant alert notifications before feed runs dry or vaccines lapse.",
+          "highlight": "Saves up to 15% on wasted concentrate feeds each week.",
+          "feed": "Feed Dispensed",
+          "vaccines": "Vaccines Due",
+          "clear": "All Clear",
+          "workers": "Active Farmhands",
+          "present": "100% Present",
+          "feedValue": "420 kg"
+        },
+        "afternoon": {
+          "time": "04:30 PM",
+          "title": "Wholesale Buyer Invoicing & bKash",
+          "badge": "Afternoon Dispatch",
+          "description": "Create printed or WhatsApp invoice receipts for milk chilling centers, live bird traders and local markets in two taps.",
+          "highlight": "Every Taka tracked with buyer contact and outstanding credit balances.",
+          "sales": "Daily Sales Total",
+          "received": "bKash Received",
+          "credit": "Credit Balance",
+          "salesValue": "৳48,500",
+          "receivedValue": "৳35,000",
+          "creditValue": "৳13,500"
+        },
+        "evening": {
+          "time": "08:00 PM",
+          "title": "Evening Peace of Mind & P&L",
+          "badge": "Daily Wrap-up",
+          "description": "As the animals sleep safely, the owner receives a crystal clear daily financial summary showing true net profit across all branches.",
+          "highlight": "No late-night accounting stress. Full clarity, complete control.",
+          "margin": "Day's Net Margin",
+          "expenses": "Total Farm Expenses",
+          "schedule": "Tomorrow's Schedule",
+          "prepared": "Auto-prepared",
+          "marginValue": "+43.8%",
+          "expensesValue": "৳24,100"
+        }
+      },
+      "telemetry": "Live Simulation Telemetry",
+      "cloudSynced": "Cloud Synced",
+      "nextHour": "Next hour"
+    },
+    "faq": {
+      "kicker": "Clear Answers for Farmers",
+      "title": "Frequently Asked Questions",
+      "description": "Have questions before bringing KhamarBari to your sheds and ponds? We have you covered.",
+      "items": [
+        {
+          "question": "Does KhamarBari work in rural areas with slow or intermittent internet?",
+          "answer": "Yes, absolutely. KhamarBari is built with an offline-resilient architecture. Your managers and farmhands can log milk yields, feed distribution, and sales even when mobile data drops. Everything automatically syncs to the central cloud the moment connectivity returns."
+        },
+        {
+          "question": "Can farm workers with limited tech literacy use the app easily?",
+          "answer": "Yes. We designed the interface in clear, authentic Bangla alongside English. Daily routine inputs like logging 20 liters of milk or marking a worker present take just two taps with big, self-explanatory icons."
+        },
+        {
+          "question": "Can I export reports for bank loans and government livestock subsidies?",
+          "answer": "Yes! KhamarBari generates one-click audited P&L statements, livestock valuation certificates, and inventory summaries in PDF and Excel (CSV) formatted specifically to meet Bangladesh commercial bank and DLS standards."
+        },
+        {
+          "question": "How many branches or farm locations can I connect?",
+          "answer": "You can manage from 1 family farm shed up to dozens of branch locations across different districts. Each branch can have its own local supervisor while the owner monitors consolidated revenue from one central screen."
+        },
+        {
+          "question": "How does the 14-day free trial work?",
+          "answer": "You get unrestricted access to every single feature, including multi-branch support, animal records, and automated exports. No credit card or prepayment is required. You can start in less than 2 minutes."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Bring calm, modern power & joy to your farm today",
+      "description": "Join hundreds of progressive cattle, poultry, and fish farm owners across Bangladesh who run their business with complete clarity.",
+      "start": "Start Your 14-Day Free Farm OS",
+      "demo": "Request a Live Guided Demo",
+      "noCard": "Zero credit card needed",
+      "setup": "2-minute instant farm setup",
+      "onboarding": "Free phone & WhatsApp onboarding"
+    }
   },
   "features": {
     "title": "Everything your farm needs",
@@ -110,6 +419,7 @@
       "title": "Create your farm account",
       "subtitle": "Set up Khamar for your farm in a few minutes.",
       "farmName": "Farm name",
+      "farmNamePlaceholder": "Green Valley Farm",
       "license": "Government license number",
       "division": "Division",
       "district": "District",
@@ -122,20 +432,37 @@
       "contact": "Contact number",
       "password": "Password",
       "confirm": "Confirm password",
+      "addressPlaceholder": "House 12, Road 5, Dhanmondi, Dhaka",
       "terms": "I agree to the Terms and Privacy Policy",
       "submit": "Create Account",
+      "submitting": "Creating account…",
       "haveAccount": "Already have an account?",
       "loginLink": "Login"
     },
     "login": {
       "title": "Welcome back",
-      "subtitle": "Login with your contact number.",
+      "subtitle": "Log in to manage your farm operations.",
       "contact": "Contact number",
       "password": "Password",
       "forgot": "Forgot password?",
       "submit": "Login",
-      "noAccount": "Don't have an account?",
-      "signupLink": "Sign Up"
+      "submitting": "Authenticating…",
+      "noAccount": "New to KhamarBari?",
+      "signupLink": "Create a farm account"
+    },
+    "layout": {
+      "badge": "A brighter day on the farm",
+      "illustrationHeadline": "Grow with numbers you can trust.",
+      "welcomeHeadline": "Welcome to your farm, digitised.",
+      "description": "Animals, expenses, production and workers — one clean dashboard for every branch.",
+      "trustData": "Fed by real data",
+      "trustSecure": "Your farm, safely kept",
+      "trustBranches": "Every branch, one view",
+      "footer": "Built in Bangladesh.",
+      "backHome": "Back to home",
+      "secure": "Secure",
+      "farmNative": "Farm-native",
+      "freeToStart": "Free to start"
     }
   },
   "errors": {
@@ -156,8 +483,10 @@
     "logoutSuccess": "You've been logged out.",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
+    "accountInactive": "This account is inactive. Contact your farm administrator.",
     "logoUpload": "Farm logo (optional)",
     "logoHint": "PNG or JPG, up to 1 MB",
+    "logoTooLarge": "Logo must be under 1 MB.",
     "chooseFile": "Choose file",
     "removeLogo": "Remove",
     "demoCredentials": "Demo credentials",

@@ -5,7 +5,7 @@ import { useUIStore } from '@/store/uiStore'
 import { cn } from '@/lib/utils'
 
 export default function LanguageToggle({ className }) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const toggleLang = useUIStore((s) => s.toggleLang)
   const isBn = i18n.language === 'bn'
 
@@ -15,7 +15,7 @@ export default function LanguageToggle({ className }) {
       size="sm"
       onClick={toggleLang}
       className={cn('gap-2 text-forest-700 hover:bg-sage', className)}
-      aria-label="Toggle language"
+      aria-label={t('language.toggle')}
     >
       <Languages className="h-4 w-4" />
       <span className="font-medium">{isBn ? 'EN' : 'বাং'}</span>

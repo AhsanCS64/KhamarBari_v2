@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { Calculator, Clock, Sparkles, TrendingUp, ArrowRight, ShieldCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
 export default function FarmRoiCalculator() {
+  const { t, i18n } = useTranslation()
   const [animals, setAnimals] = useState(120)
   const [branches, setBranches] = useState(2)
   const [farmType, setFarmType] = useState('dairy')
@@ -31,7 +33,7 @@ export default function FarmRoiCalculator() {
 
     return {
       hoursSaved: Math.min(hours, 240),
-      moneySaved: money.toLocaleString('en-US'),
+      moneySaved: money,
       marginBoost: margin,
     }
   }, [animals, branches, farmType])
@@ -46,13 +48,13 @@ export default function FarmRoiCalculator() {
         <div className="max-w-3xl mx-auto text-center mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-400/30 bg-emerald-950/60 text-fresh-300 text-xs font-bold uppercase tracking-wider mb-4">
             <Calculator className="h-3.5 w-3.5 text-fresh-400" />
-            INTERACTIVE SAVINGS SIMULATOR
+            {t('home.roi.kicker')}
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-            See how much your farm will save every month
+            {t('home.roi.title')}
           </h2>
           <p className="mt-4 text-base sm:text-lg text-cream/75 max-w-xl mx-auto">
-            Adjust the sliders to match your current setup and discover the exact time and money KhamarBari frees up for you.
+            {t('home.roi.description')}
           </p>
         </div>
 
@@ -62,14 +64,14 @@ export default function FarmRoiCalculator() {
             {/* Farm Type Selector */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-fresh-300 mb-2">
-                Primary Farm Focus
+                {t('home.roi.focus')}
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'dairy', label: '🥛 Dairy', desc: 'Cattle & Goats' },
-                  { id: 'poultry', label: '🐔 Poultry', desc: 'Broiler & Layer' },
-                  { id: 'aqua', label: '🐟 Fisheries', desc: 'Ponds & Biofloc' },
-                  { id: 'mixed', label: '🌾 Mixed', desc: 'Multi-Sector' },
+                  { id: 'dairy', label: '🥛', key: 'dairy' },
+                  { id: 'poultry', label: '🐔', key: 'poultry' },
+                  { id: 'aqua', label: '🐟', key: 'aqua' },
+                  { id: 'mixed', label: '🌾', key: 'mixed' },
                 ].map((type) => (
                   <button
                     key={type.id}
@@ -80,8 +82,8 @@ export default function FarmRoiCalculator() {
                         : 'border-white/10 bg-white/5 text-cream/70 hover:bg-white/10 hover:text-white'
                     }`}
                   >
-                    <span className="block text-xs font-bold">{type.label}</span>
-                    <span className="block text-[10px] text-cream/50 mt-0.5">{type.desc}</span>
+                    <span className="block text-xs font-bold">{type.label} {t(`home.roi.types.${type.key}`)}</span>
+                    <span className="block text-[10px] text-cream/50 mt-0.5">{t(`home.roi.types.${type.key}Description`)}</span>
                   </button>
                 ))}
               </div>
@@ -91,10 +93,11 @@ export default function FarmRoiCalculator() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-cream/80">
-                  {farmType === 'poultry' ? 'Flock Size (in hundreds)' : 'Animals / Habitats'}
+                  {farmType === 'poultry' ? t('home.roi.flockSize') : t('home.roi.animals')}
                 </label>
                 <span className="font-mono text-lg font-black text-fresh-300">
-                  {animals} {farmType === 'poultry' ? 'x 100 birds' : 'headcount'}
+                  {new Intl.NumberFormat(i18n.language).format(animals)}{' '}
+                  {farmType === 'poultry' ? t('home.roi.birds') : t('home.roi.headcount')}
                 </span>
               </div>
               <input
@@ -107,9 +110,9 @@ export default function FarmRoiCalculator() {
                 className="w-full h-2 rounded-lg bg-emerald-950 appearance-none cursor-pointer accent-fresh-400"
               />
               <div className="flex justify-between text-[10px] text-cream/40 mt-1 font-mono">
-                <span>10</span>
-                <span>250</span>
-                <span>500+</span>
+                <span>{new Intl.NumberFormat(i18n.language).format(10)}</span>
+                <span>{new Intl.NumberFormat(i18n.language).format(250)}</span>
+                <span>{new Intl.NumberFormat(i18n.language).format(500)}+</span>
               </div>
             </div>
 
@@ -117,10 +120,10 @@ export default function FarmRoiCalculator() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-bold uppercase tracking-wider text-cream/80">
-                  Active Farm Branches
+                  {t('home.roi.branches')}
                 </label>
                 <span className="font-mono text-lg font-black text-fresh-300">
-                  {branches} {branches === 1 ? 'Location' : 'Locations'}
+                  {new Intl.NumberFormat(i18n.language).format(branches)} {t('home.roi.location', { count: branches })}
                 </span>
               </div>
               <input
@@ -133,9 +136,9 @@ export default function FarmRoiCalculator() {
                 className="w-full h-2 rounded-lg bg-emerald-950 appearance-none cursor-pointer accent-fresh-400"
               />
               <div className="flex justify-between text-[10px] text-cream/40 mt-1 font-mono">
-                <span>1 Branch</span>
-                <span>4 Branches</span>
-                <span>8 Branches</span>
+                <span>{new Intl.NumberFormat(i18n.language).format(1)} {t('home.roi.branch', { count: 1 })}</span>
+                <span>{new Intl.NumberFormat(i18n.language).format(4)} {t('home.roi.branch', { count: 4 })}</span>
+                <span>{new Intl.NumberFormat(i18n.language).format(8)} {t('home.roi.branch', { count: 8 })}</span>
               </div>
             </div>
           </div>
@@ -147,7 +150,7 @@ export default function FarmRoiCalculator() {
             </div>
 
             <span className="text-[11px] font-bold uppercase tracking-wider text-fresh-400">
-              ESTIMATED MONTHLY RETURN
+              {t('home.roi.estimatedReturn')}
             </span>
 
             <div className="mt-4 space-y-4">
@@ -155,13 +158,13 @@ export default function FarmRoiCalculator() {
               <div className="pb-3 border-b border-white/10">
                 <span className="text-xs text-cream/70 flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5 text-fresh-400" />
-                  Monthly Loss & Waste Prevented
+                  {t('home.roi.lossPrevented')}
                 </span>
                 <div className="mt-1 flex items-baseline gap-1">
                   <span className="text-3xl font-black font-mono text-fresh-300">
-                    ৳{results.moneySaved}
+                    ৳{new Intl.NumberFormat(i18n.language).format(results.moneySaved)}
                   </span>
-                  <span className="text-xs text-cream/60">/ month</span>
+                  <span className="text-xs text-cream/60">{t('home.roi.month')}</span>
                 </div>
               </div>
 
@@ -169,19 +172,19 @@ export default function FarmRoiCalculator() {
               <div className="pb-3 border-b border-white/10">
                 <span className="text-xs text-cream/70 flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5 text-yellow-300" />
-                  Time Freed From Tedious Paperwork
+                  {t('home.roi.timeFreed')}
                 </span>
                 <div className="mt-1 flex items-baseline gap-1">
                   <span className="text-3xl font-black font-mono text-yellow-300">
-                    ~{results.hoursSaved} hrs
+                    ~{new Intl.NumberFormat(i18n.language).format(results.hoursSaved)} {t('home.roi.hours')}
                   </span>
-                  <span className="text-xs text-cream/60">/ month</span>
+                  <span className="text-xs text-cream/60">{t('home.roi.month')}</span>
                 </div>
               </div>
 
               {/* Efficiency */}
               <div>
-                <span className="text-xs text-cream/70">Projected Margin Surge</span>
+                <span className="text-xs text-cream/70">{t('home.roi.marginSurge')}</span>
                 <div className="mt-1 text-2xl font-black font-mono text-white">
                   +{results.marginBoost}%
                 </div>
@@ -194,12 +197,12 @@ export default function FarmRoiCalculator() {
               asChild
             >
               <Link to="/signup" className="flex items-center justify-center gap-2">
-                <span>Unlock These Savings Now</span>
+                <span>{t('home.roi.unlock')}</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <p className="mt-2 text-center text-[11px] text-cream/50">
-              Free 14-day setup · No payment info required
+              {t('home.roi.trial')}
             </p>
           </div>
         </div>

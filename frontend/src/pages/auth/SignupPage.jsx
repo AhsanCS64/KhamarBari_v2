@@ -54,7 +54,7 @@ export default function SignupPage() {
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 1024 * 1024) {
-      setServerError('Logo must be under 1 MB.')
+      setServerError(t('authExtra.logoTooLarge'))
       return
     }
     const reader = new FileReader()
@@ -74,12 +74,16 @@ export default function SignupPage() {
     navigate('/login?registered=1')
   }
 
+  const localizedServerError = {
+    'This contact number is already registered': t('authExtra.alreadyRegistered'),
+  }[serverError] || serverError
+
   return (
     <AuthLayout title={t('auth.signup.title')} subtitle={t('auth.signup.subtitle')} side="illustration">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         {serverError && (
           <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2">
-            {serverError}
+            {localizedServerError}
           </div>
         )}
 
@@ -117,7 +121,7 @@ export default function SignupPage() {
         </div>
 
         <Field label={t('auth.signup.farmName')} error={errors.farmName?.message}>
-          <Input {...register('farmName')} placeholder="Green Valley Farm" />
+          <Input {...register('farmName')} placeholder={t('auth.signup.farmNamePlaceholder')} />
         </Field>
 
         <Field label={t('auth.signup.license')} error={errors.license?.message}>
@@ -158,7 +162,7 @@ export default function SignupPage() {
         </div>
 
         <Field label={t('auth.signup.address')} error={errors.address?.message}>
-          <Textarea rows={2} {...register('address')} placeholder="House 12, Road 5, Dhanmondi, Dhaka" />
+          <Textarea rows={2} {...register('address')} placeholder={t('auth.signup.addressPlaceholder')} />
         </Field>
 
         <div className="grid sm:grid-cols-2 gap-5">
@@ -187,7 +191,7 @@ export default function SignupPage() {
           <Field label={t('auth.signup.password')} error={errors.password?.message}>
             <div className="relative">
               <Input type={showPw ? 'text' : 'password'} {...register('password')} />
-              <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-forest-700/70" aria-label="toggle">
+              <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-forest-700/70" aria-label={t(showPw ? 'authExtra.hidePassword' : 'authExtra.showPassword')}>
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -195,7 +199,7 @@ export default function SignupPage() {
           <Field label={t('auth.signup.confirm')} error={errors.confirm?.message}>
             <div className="relative">
               <Input type={showConfirm ? 'text' : 'password'} {...register('confirm')} />
-              <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-forest-700/70" aria-label="toggle">
+              <button type="button" onClick={() => setShowConfirm((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-forest-700/70" aria-label={t(showConfirm ? 'authExtra.hidePassword' : 'authExtra.showPassword')}>
                 {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -211,7 +215,7 @@ export default function SignupPage() {
         </div>
 
         <Button type="submit" className="w-full" size="lg" disabled={submitting}>
-          {submitting ? t('common.loading') : t('auth.signup.submit')}
+          {submitting ? t('auth.signup.submitting') : t('auth.signup.submit')}
         </Button>
 
         <p className="text-sm text-center text-forest-700/80">

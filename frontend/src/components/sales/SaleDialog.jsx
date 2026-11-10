@@ -171,6 +171,7 @@ export default function SaleDialog({ open, onOpenChange, editing, onSaved }) {
   // Filter animals by branch and selected enclosure/species
   const filteredAnimals = animals.filter((a) => {
     if (currentBranchId && currentBranchId !== 'none' && a.branchId && a.branchId !== currentBranchId) return false
+    if (selectedEnclosureId && a.enclosureId !== selectedEnclosureId) return false
     if (selectedEnclosure?.speciesId && a.species) {
       if (a.species !== selectedEnclosure.speciesId) return false
     }
@@ -188,6 +189,16 @@ export default function SaleDialog({ open, onOpenChange, editing, onSaved }) {
     setServerError('')
 
     // 1. Validation for Live Animals from Enclosure: cannot exceed occupied headcount!
+    if (values.itemType === 'animal' && !Number.isInteger(Number(values.quantity))) {
+      setServerError('Live animal quantity must be a whole number.')
+      return
+    }
+
+    if (values.itemType === 'animal' && values.animalId && Number(values.quantity) !== 1) {
+      setServerError('A sale linked to an individual animal must have quantity 1.')
+      return
+    }
+
     if (values.itemType === 'animal' && selectedEnclosure) {
       const availableHeadcount = Number(selectedEnclosure.occupied || 0) +
         (editing && editing.enclosureId === selectedEnclosure.id ? Number(editing.quantity || 0) : 0)
@@ -326,6 +337,7 @@ export default function SaleDialog({ open, onOpenChange, editing, onSaved }) {
                 onValueChange={(v) => {
                   const id = v === 'none' ? '' : v
                   setValue('enclosureId', id)
+                  setValue('animalId', '')
                   const found = enclosures.find((e) => e.id === id)
                   setValue('enclosureName', found ? found.name : '')
                   if (found?.branchId) setValue('branchId', found.branchId)

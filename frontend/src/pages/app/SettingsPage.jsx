@@ -4,26 +4,17 @@ import { useLocation } from 'react-router-dom'
 import {
   BellRing, Download, Globe, Languages, RotateCcw, Sun,
   Building2, Camera, Upload, Trash2, Check, AlertTriangle,
-  User, ShieldCheck, MapPin, Sparkles, Phone, Mail, Award,
-  Save, Sliders, ExternalLink, RefreshCw
+  ShieldCheck, MapPin, Sparkles, Phone, Mail, Award,
+  Save, Sliders, RefreshCw
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import ConfirmDialog from '@/components/common/ConfirmDialog'
 import { useAuthStore } from '@/store/authStore'
 import { useAppStore } from '@/store/appStore'
 import { useUIStore } from '@/store/uiStore'
 import { storage } from '@/services/storage'
-
-const PRESET_USER_AVATARS = [
-  { id: 'u1', label: 'Farmer Pro', url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=240&auto=format&fit=crop&q=80' },
-  { id: 'u2', label: 'Agro Pioneer', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=240&auto=format&fit=crop&q=80' },
-  { id: 'u3', label: 'Green Steward', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=240&auto=format&fit=crop&q=80' },
-  { id: 'u4', label: 'Modern Grower', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=240&auto=format&fit=crop&q=80' },
-  { id: 'u5', label: 'Sprout Mascot', url: '/sprout.svg' },
-]
 
 const PRESET_FARM_LOGOS = [
   { id: 'fl1', label: 'Fresh Sprout', url: '/sprout.svg' },
@@ -36,20 +27,17 @@ export default function SettingsPage() {
   const { t, i18n } = useTranslation()
   const location = useLocation()
 
-  const user = useAuthStore((state) => state.user)
   const farm = useAuthStore((state) => state.farm)
-  const updateProfile = useAuthStore((state) => state.updateProfile)
   const updateFarm = useAuthStore((state) => state.updateFarm)
 
   const dateRange = useAppStore((state) => state.dateRange)
   const setDateRange = useAppStore((state) => state.setDateRange)
   const setLang = useUIStore((state) => state.setLang)
 
-  const [activeTab, setActiveTab] = useState('farm') // 'farm' | 'profile' | 'preferences'
+  const [activeTab, setActiveTab] = useState('farm') // 'farm' | 'preferences'
 
   // Sync hash if passed
   useEffect(() => {
-    if (location.hash === '#profile') setActiveTab('profile')
     if (location.hash === '#preferences') setActiveTab('preferences')
   }, [location.hash])
 
@@ -69,16 +57,19 @@ export default function SettingsPage() {
   const [farmSuccess, setFarmSuccess] = useState('')
   const [farmError, setFarmError] = useState('')
 
-  // --- Profile Form State ---
-  const [userName, setUserName] = useState(user?.name || '')
-  const [userContact, setUserContact] = useState(user?.contact || '')
-  const [userEmail, setUserEmail] = useState(user?.email || '')
-  const [userAvatar, setUserAvatar] = useState(user?.avatar || '')
-  const [userRoleTitle, setUserRoleTitle] = useState(user?.roleTitle || 'Founder & Farm Owner')
-  const [userBio, setUserBio] = useState(user?.bio || '')
-  const [savingProfile, setSavingProfile] = useState(false)
-  const [profileSuccess, setProfileSuccess] = useState('')
-  const [profileError, setProfileError] = useState('')
+  useEffect(() => {
+    setFarmName(farm?.name || '')
+    setFarmTagline(farm?.tagline || 'Modern Livestock & Sustainable Agro')
+    setFarmLogo(farm?.logo || '')
+    setFarmLicense(farm?.license || '')
+    setFarmAddress(farm?.address || '')
+    setFarmDistrict(farm?.district || '')
+    setFarmDivision(farm?.division || '')
+    setFarmUpazila(farm?.upazila || '')
+    setFarmType(farm?.farmType || 'Integrated Mixed Farm')
+    setFarmContact(farm?.contact || '')
+    setFarmEmail(farm?.email || '')
+  }, [farm])
 
   // --- Preferences State ---
   const preferences = storage.get('preferences', {}) || {}
@@ -87,7 +78,6 @@ export default function SettingsPage() {
   const [resetting, setResetting] = useState(false)
 
   const farmLogoInputRef = useRef(null)
-  const userAvatarInputRef = useRef(null)
 
   // File upload handlers (convert to base64)
   const handleFarmLogoUpload = (e) => {
@@ -105,25 +95,6 @@ export default function SettingsPage() {
     reader.onload = () => {
       setFarmLogo(reader.result)
       setFarmError('')
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const handleUserAvatarUpload = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setProfileError('Please upload a valid image file.')
-      return
-    }
-    if (file.size > 1024 * 1024) {
-      setProfileError('Please choose an image smaller than 1 MB.')
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = () => {
-      setUserAvatar(reader.result)
-      setProfileError('')
     }
     reader.readAsDataURL(file)
   }
@@ -156,32 +127,6 @@ export default function SettingsPage() {
     } else {
       setFarmSuccess('Farm Name and Branding updated successfully! Topbar and headers updated.')
       setTimeout(() => setFarmSuccess(''), 4500)
-    }
-  }
-
-  const handleSaveProfile = async (e) => {
-    e.preventDefault()
-    setSavingProfile(true)
-    setProfileSuccess('')
-    setProfileError('')
-
-    const patch = {
-      name: userName.trim(),
-      contact: userContact.trim(),
-      email: userEmail.trim() || null,
-      roleTitle: userRoleTitle.trim(),
-      bio: userBio.trim(),
-      avatar: userAvatar || null,
-    }
-
-    const { error } = await updateProfile(patch)
-    setSavingProfile(false)
-
-    if (error) {
-      setProfileError(error)
-    } else {
-      setProfileSuccess('Profile photo and details saved successfully! Topbar avatar updated.')
-      setTimeout(() => setProfileSuccess(''), 4500)
     }
   }
 
@@ -224,8 +169,6 @@ export default function SettingsPage() {
     { value: 'ytd', label: t('range.ytd') },
   ]
 
-  const userInitials = (userName || user?.name || '?').split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()
-
   return (
     <div className="space-y-6 p-4 sm:p-6 max-w-5xl mx-auto">
       {/* Header */}
@@ -234,7 +177,7 @@ export default function SettingsPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-forest-600">{t('settings.eyebrow', 'Administration')}</p>
           <h1 className="mt-1 text-2xl font-bold text-forest-900">{t('sidebar.settings', 'Settings')}</h1>
           <p className="mt-1 max-w-2xl text-sm text-forest-700/70">
-            Configure your farm identity &amp; name, manage profile photo, regional preferences, and data backups.
+            Configure your farm identity, regional preferences, and data backups.
           </p>
         </div>
       </header>
@@ -252,19 +195,6 @@ export default function SettingsPage() {
         >
           <Building2 className="h-4 w-4" />
           <span>Farm Name &amp; Branding</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('profile')}
-          className={`flex items-center gap-2 py-3 px-4 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
-            activeTab === 'profile'
-              ? 'border-emerald-700 text-emerald-800 bg-emerald-50/50 rounded-t-xl'
-              : 'border-transparent text-forest-700/60 hover:text-forest-900'
-          }`}
-        >
-          <User className="h-4 w-4" />
-          <span>Profile Photo &amp; Account</span>
         </button>
 
         <button
@@ -529,217 +459,6 @@ export default function SettingsPage() {
                 >
                   <Save className="h-4 w-4" />
                   <span>{savingFarm ? t('common.loading', 'Saving...') : 'Save Farm Information'}</span>
-                </Button>
-              </div>
-            </form>
-          </section>
-        </div>
-      )}
-
-      {/* ================= TAB 2: PROFILE PHOTO & ACCOUNT ================= */}
-      {activeTab === 'profile' && (
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          {/* Left: User Avatar Studio */}
-          <section className="rounded-2xl border border-forest-100 bg-white p-5 shadow-soft text-center h-fit">
-            <h2 className="text-sm font-bold text-forest-900 mb-3 text-left flex items-center gap-2">
-              <Camera className="h-4 w-4 text-emerald-700" />
-              <span>Profile Photo</span>
-            </h2>
-
-            {/* Profile Avatar Canvas */}
-            <div className="relative mx-auto w-32 h-32 rounded-full border-4 border-emerald-50 shadow-md overflow-hidden bg-forest-900 group">
-              {userAvatar ? (
-                <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-forest-700 to-forest-950 text-white text-3xl font-black">
-                  {userInitials}
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => userAvatarInputRef.current?.click()}
-                className="absolute inset-0 bg-black/45 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-xs font-semibold"
-              >
-                <Camera className="h-6 w-6 mb-1" />
-                <span>Change Photo</span>
-              </button>
-            </div>
-
-            <p className="mt-3 text-base font-bold text-forest-900">{userName || 'Your Name'}</p>
-            <p className="text-xs text-forest-700/70 font-medium capitalize">{userRoleTitle || user?.role}</p>
-
-            <input
-              ref={userAvatarInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleUserAvatarUpload}
-            />
-
-            <div className="mt-4 flex flex-col gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="w-full justify-center gap-1.5"
-                onClick={() => userAvatarInputRef.current?.click()}
-              >
-                <Upload className="h-3.5 w-3.5" />
-                <span>Upload Custom Photo</span>
-              </Button>
-
-              {userAvatar && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-center text-red-600 hover:bg-red-50 text-xs"
-                  onClick={() => setUserAvatar('')}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Remove Photo</span>
-                </Button>
-              )}
-            </div>
-
-            {/* Preset User Avatars */}
-            <div className="mt-5 pt-4 border-t border-forest-50 text-left">
-              <p className="text-[11px] font-semibold text-forest-700/75 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-amber-500" />
-                <span>1-Click Preset Avatars</span>
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {PRESET_USER_AVATARS.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setUserAvatar(p.url)}
-                    title={p.label}
-                    className={`h-10 w-10 rounded-full border-2 p-0.5 overflow-hidden transition-all hover:scale-110 cursor-pointer ${
-                      userAvatar === p.url ? 'border-emerald-600 ring-2 ring-emerald-400' : 'border-forest-100 hover:border-emerald-400'
-                    }`}
-                  >
-                    <img src={p.url} alt={p.label} className="w-full h-full object-cover rounded-full" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-forest-50 text-center">
-              <Button variant="ghost" size="sm" asChild className="text-xs text-emerald-800 gap-1">
-                <Link to="/dashboard/profile">
-                  <span>Open Full Profile Page</span>
-                  <ExternalLink className="h-3 w-3" />
-                </Link>
-              </Button>
-            </div>
-          </section>
-
-          {/* Right: Personal Information Quick Editor */}
-          <section className="rounded-2xl border border-forest-100 bg-white p-5 shadow-soft">
-            <div className="border-b border-forest-50 pb-4 mb-4">
-              <h2 className="text-base font-bold text-forest-900 flex items-center gap-2">
-                <User className="h-4 w-4 text-emerald-700" />
-                <span>Account &amp; Personal Info</span>
-              </h2>
-              <p className="mt-0.5 text-xs text-forest-700/70">
-                Update your display name, contact phone, role title, and bio.
-              </p>
-            </div>
-
-            {profileSuccess && (
-              <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3.5 py-2.5 flex items-center gap-2">
-                <Check className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span>{profileSuccess}</span>
-              </div>
-            )}
-
-            {profileError && (
-              <div className="mb-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs px-3.5 py-2.5 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
-                <span>{profileError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="setUserName">Full Name *</Label>
-                  <Input
-                    id="setUserName"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    required
-                    placeholder="e.g. Md. Ahsan Habib"
-                    className="mt-1.5"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="setUserRoleTitle">Role / Professional Title</Label>
-                  <Input
-                    id="setUserRoleTitle"
-                    value={userRoleTitle}
-                    onChange={(e) => setUserRoleTitle(e.target.value)}
-                    placeholder="e.g. Managing Director & Dairy Specialist"
-                    className="mt-1.5"
-                  />
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="setUserContact" className="flex items-center gap-1.5">
-                    <Phone className="h-3 w-3 text-forest-600" />
-                    <span>Contact / Login Phone *</span>
-                  </Label>
-                  <Input
-                    id="setUserContact"
-                    value={userContact}
-                    onChange={(e) => setUserContact(e.target.value)}
-                    required
-                    placeholder="e.g. 01700000000"
-                    className="mt-1.5"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="setUserEmail" className="flex items-center gap-1.5">
-                    <Mail className="h-3 w-3 text-forest-600" />
-                    <span>Email Address</span>
-                  </Label>
-                  <Input
-                    id="setUserEmail"
-                    type="email"
-                    value={userEmail}
-                    onChange={(e) => setUserEmail(e.target.value)}
-                    placeholder="e.g. owner@khamarbari.com"
-                    className="mt-1.5"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="setUserBio">About Me / Farmer Bio</Label>
-                <Textarea
-                  id="setUserBio"
-                  rows={3}
-                  value={userBio}
-                  onChange={(e) => setUserBio(e.target.value)}
-                  placeholder="Share details about your farming credentials, livestock focus..."
-                  className="mt-1.5"
-                />
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <Button
-                  type="submit"
-                  disabled={savingProfile}
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold flex items-center gap-2"
-                >
-                  <Save className="h-4 w-4" />
-                  <span>{savingProfile ? t('common.loading', 'Saving...') : 'Save Profile Changes'}</span>
                 </Button>
               </div>
             </form>

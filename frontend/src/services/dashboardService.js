@@ -6,9 +6,17 @@ import { listItems } from './inventoryService'
 import { listProduction } from './productionService'
 import { listSales } from './salesService'
 import { listUtilities } from './utilitiesService'
-import { listWorkers } from './workersService'
+import { listPayments, listWorkers } from './workersService'
 
 const dateKey = (date) => new Date(date).toISOString().slice(0, 10)
+const recordDate = (date) => date ? String(date).slice(0, 10) : ''
+const utilityCostDate = (utility) => recordDate(utility.paidDate)
+  || recordDate(utility.createdAt)
+  || (utility.billingPeriod ? `${utility.billingPeriod.slice(0, 7)}-01` : '')
+const isWorkerOutflow = (payment) => payment.type === 'salary'
+  || payment.type === 'advance'
+  || payment.type === 'bonus'
+
 const getRangeDays = (range) => {
   if (range === 'ytd') {
     const start = new Date(new Date().getFullYear(), 0, 1)
@@ -30,11 +38,12 @@ async function loadDashboardData({ farmId, branchId }) {
     listItems(filters),
     listUtilities(filters),
     listWorkers(filters),
+    listPayments(filters),
   ])
   const error = results.find((result) => result.error)?.error
   if (error) throw new Error(error)
-  const [animals, branches, enclosures, expenses, sales, production, inventory, utilities, workers] = results.map((result) => result.data)
-  return { animals, branches, enclosures, expenses, sales, production, inventory, utilities, workers, farmId }
+  const [animals, branches, enclosures, expenses, sales, production, inventory, utilities, workers, workerPayments] = results.map((result) => result.data)
+  return { animals, branches, enclosures, expenses, sales, production, inventory, utilities, workers, workerPayments, farmId }
 }
 
 function getHealthCounts(animals, enclosures) {
@@ -73,6 +82,91 @@ function getHealthCounts(animals, enclosures) {
   return counts
 }
 
+function getActivity(data) {
+  const links = {
+    animal: '/dashboard/animals',
+    sale: '/dashboard/sales',
+    expense: '/dashboard/expenses',
+    production: '/dashboard/production',
+  }
+  return [
+    ...data.animals.map((record) => ({ id: record.id, type: 'animal', title: `Animal ${record.tag} added`, createdAt: record.createdAt })),
+    ...data.sales.map((record) => ({ id: record.id, type: 'sale', title: `Sale to ${record.buyer}`, createdAt: record.createdAt })),
+    ...data.expenses.map((record) => ({ id: record.id, type: 'expense', title: `Expense: ${record.title}`, createdAt: record.createdAt })),
+    ...data.production.map((record) => ({ id: record.id, type: 'production', title: `${record.type} production recorded`, createdAt: record.createdAt })),
+  ]
+    .filter((record) => record.createdAt)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 8)
+    .map((record) => ({
+      ...record,
+      href: links[record.type],
+      time: new Date(record.createdAt).toLocaleString(),
+    }))
+}
+
+function getAlertRows(data) {
+  const enclosedAnimals = new Map()
+  data.animals.forEach((animal) => {
+    if (!animal.enclosureId || animal.health === 'healthy' || !animal.health) return
+    const enclosureId = String(animal.enclosureId)
+    enclosedAnimals.set(enclosureId, (enclosedAnimals.get(enclosureId) || 0) + 1)
+  })
+
+  const enclosureAlerts = data.enclosures.flatMap((enclosure) => {
+    const animalCount = enclosedAnimals.get(String(enclosure.id)) || 0
+    const affectedCount = Math.max(Number(enclosure.sickCount || 0), animalCount)
+    const health = enclosure.health || 'healthy'
+    if (affectedCount === 0 && health === 'healthy') return []
+
+    const needsCare = health === 'treatment' || health === 'quarantine' || affectedCount > 0
+    const count = affectedCount || Number(enclosure.occupied || 0)
+    const healthLabel = health === 'watch' ? 'under observation' : health
+    return [{
+      id: `enclosure-health-${enclosure.id}`,
+      severity: needsCare ? 'high' : 'medium',
+      title: `${enclosure.name}: ${healthLabel}`,
+      detail: count > 0 ? `${count} of ${Number(enclosure.occupied || 0)} occupied stock need attention.` : 'Enclosure health needs review.',
+      type: 'animal',
+      href: '/dashboard/animals',
+    }]
+  })
+
+  const enclosedIds = new Set(data.enclosures.map((enclosure) => String(enclosure.id)))
+  const alerts = [
+    ...enclosureAlerts,
+    ...data.animals.filter((animal) =>
+      (!animal.enclosureId || !enclosedIds.has(String(animal.enclosureId))) &&
+      animal.health && animal.health !== 'healthy'
+    ).map((animal) => ({
+      id: `animal-${animal.id}`,
+      severity: animal.health === 'watch' ? 'medium' : 'high',
+      title: `${animal.tag || animal.name || 'Animal'}: ${animal.health}`,
+      detail: 'Animal health status needs review.',
+      type: 'animal',
+      href: '/dashboard/animals',
+    })),
+    ...data.inventory.filter((item) => Number(item.quantity) <= Number(item.minimumThreshold)).map((item) => ({
+      id: `inventory-${item.id}`,
+      severity: 'medium',
+      title: `${item.name}: stock is low`,
+      detail: `${Number(item.quantity || 0)} ${item.unit || ''} remaining (minimum ${Number(item.minimumThreshold || 0)}).`,
+      type: 'inventory',
+      href: '/dashboard/inventory',
+    })),
+    ...data.utilities.filter((utility) => utility.status === 'overdue').map((utility) => ({
+      id: `utility-${utility.id}`,
+      severity: 'medium',
+      title: `${utility.type}: bill overdue`,
+      detail: 'Review the overdue utility bill.',
+      type: 'utility',
+      href: '/dashboard/utilities',
+    })),
+  ]
+  const severity = { high: 0, medium: 1, low: 2 }
+  return alerts.sort((a, b) => severity[a.severity] - severity[b.severity])
+}
+
 export async function getDashboardSummary({ farmId, branchId, range = '7d' }) {
   try {
     const data = await loadDashboardData({ farmId, branchId })
@@ -85,10 +179,24 @@ export async function getDashboardSummary({ farmId, branchId, range = '7d' }) {
     const inRange = (record) => record.date >= from && record.date <= today
     const recentSales = data.sales.filter(inRange)
     const recentExpenses = data.expenses.filter(inRange)
+    const recentUtilities = data.utilities.filter((utility) => {
+      const date = utilityCostDate(utility)
+      return date >= from && date <= today
+    })
+    const recentWorkerPayments = data.workerPayments.filter((payment) =>
+      isWorkerOutflow(payment) && inRange(payment)
+    )
     const recentProduction = data.production.filter(inRange)
     const thirtyDaysAgo = dateKey(new Date(Date.now() - 29 * 86400000))
     const sales30d = data.sales.filter((sale) => sale.date >= thirtyDaysAgo && sale.date <= today)
     const expenses30d = data.expenses.filter((expense) => expense.date >= thirtyDaysAgo && expense.date <= today)
+    const utilities30d = data.utilities.filter((utility) => {
+      const date = utilityCostDate(utility)
+      return date >= thirtyDaysAgo && date <= today
+    })
+    const workerPayments30d = data.workerPayments.filter((payment) =>
+      isWorkerOutflow(payment) && payment.date >= thirtyDaysAgo && payment.date <= today
+    )
     const todayProduction = recentProduction.filter((record) => record.date === today)
     const grouped = new Map()
     for (let offset = getRangeDays(range) - 1; offset >= 0; offset -= 1) {
@@ -104,6 +212,14 @@ export async function getDashboardSummary({ farmId, branchId, range = '7d' }) {
       const row = grouped.get(expense.date)
       if (row) row.expense += Number(expense.amount || 0)
     })
+    recentUtilities.forEach((utility) => {
+      const row = grouped.get(utilityCostDate(utility))
+      if (row) row.expense += Number(utility.amount || 0)
+    })
+    recentWorkerPayments.forEach((payment) => {
+      const row = grouped.get(payment.date)
+      if (row) row.expense += Number(payment.amount || 0)
+    })
     const trend = new Map()
     grouped.forEach((_, day) => trend.set(day, { date: day.slice(5), milk: 0, eggs: 0 }))
     recentProduction.forEach((record) => {
@@ -113,6 +229,8 @@ export async function getDashboardSummary({ farmId, branchId, range = '7d' }) {
     })
     const revenue = sales30d.reduce((sum, sale) => sum + Number(sale.total || 0), 0)
     const expenseTotal = expenses30d.reduce((sum, expense) => sum + Number(expense.amount || 0), 0)
+      + utilities30d.reduce((sum, utility) => sum + Number(utility.amount || 0), 0)
+      + workerPayments30d.reduce((sum, payment) => sum + Number(payment.amount || 0), 0)
     const totalCapacity = data.enclosures.reduce((sum, enclosure) => sum + Number(enclosure.capacity || 0), 0)
     const occupied = data.enclosures.reduce((sum, enclosure) => sum + Number(enclosure.occupied || 0), 0)
     const kpis = {
@@ -125,6 +243,7 @@ export async function getDashboardSummary({ farmId, branchId, range = '7d' }) {
       sick: healthCounts.monitoring + healthCounts.affected,
       activeWorkers: data.workers.filter((worker) => worker.status !== 'inactive').length,
       totalWorkers: data.workers.length,
+      inventoryItemCount: data.inventory.length,
       lowStockCount: data.inventory.filter((item) => Number(item.quantity || 0) <= Number(item.minimumThreshold || 0)).length,
       births30d: data.production.filter((record) => record.type === 'birth' && record.date >= thirtyDaysAgo && record.date <= today).reduce((sum, record) => sum + Number(record.quantity || 0), 0),
       deaths30d: data.production.filter((record) => record.type === 'death' && record.date >= thirtyDaysAgo && record.date <= today).reduce((sum, record) => sum + Number(record.quantity || 0), 0),
@@ -148,6 +267,8 @@ export async function getDashboardSummary({ farmId, branchId, range = '7d' }) {
         productionTrend: [...trend.values()],
         branchCount: data.branches.length,
         enclosures: data.enclosures,
+        recentActivity: getActivity(data),
+        alerts: getAlertRows(data),
       },
       error: null,
     }
@@ -159,17 +280,7 @@ export async function getDashboardSummary({ farmId, branchId, range = '7d' }) {
 export async function getRecentActivity({ farmId, branchId } = {}) {
   try {
     const data = await loadDashboardData({ farmId, branchId })
-    const activity = [
-      ...data.animals.map((record) => ({ id: record.id, type: 'animal', title: `Animal ${record.tag} added`, createdAt: record.createdAt })),
-      ...data.sales.map((record) => ({ id: record.id, type: 'sale', title: `Sale to ${record.buyer}`, createdAt: record.createdAt })),
-      ...data.expenses.map((record) => ({ id: record.id, type: 'expense', title: `Expense: ${record.title}`, createdAt: record.createdAt })),
-      ...data.production.map((record) => ({ id: record.id, type: 'production', title: `${record.type} production recorded`, createdAt: record.createdAt })),
-    ]
-      .filter((record) => record.createdAt)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 8)
-      .map((record) => ({ ...record, time: new Date(record.createdAt).toLocaleString() }))
-    return { data: activity, error: null }
+    return { data: getActivity(data), error: null }
   } catch (error) {
     return { data: [], error: error.message }
   }
@@ -178,66 +289,7 @@ export async function getRecentActivity({ farmId, branchId } = {}) {
 export async function getAlerts({ farmId, branchId } = {}) {
   try {
     const data = await loadDashboardData({ farmId, branchId })
-    const enclosedAnimals = new Map()
-    data.animals.forEach((animal) => {
-      if (!animal.enclosureId || animal.health === 'healthy' || !animal.health) return
-      const enclosureId = String(animal.enclosureId)
-      enclosedAnimals.set(enclosureId, (enclosedAnimals.get(enclosureId) || 0) + 1)
-    })
-
-    const enclosureAlerts = data.enclosures.flatMap((enclosure) => {
-      const animalCount = enclosedAnimals.get(String(enclosure.id)) || 0
-      const affectedCount = Math.max(Number(enclosure.sickCount || 0), animalCount)
-      const health = enclosure.health || 'healthy'
-      if (affectedCount === 0 && health === 'healthy') return []
-
-      const needsCare = health === 'treatment' || health === 'quarantine' || affectedCount > 0
-      const count = affectedCount || Number(enclosure.occupied || 0)
-      const healthLabel = health === 'watch' ? 'under observation' : health
-      return [{
-        id: `enclosure-health-${enclosure.id}`,
-        severity: needsCare ? 'high' : 'medium',
-        title: `${enclosure.name}: ${healthLabel}`,
-        detail: count > 0 ? `${count} of ${Number(enclosure.occupied || 0)} occupied stock need attention.` : 'Enclosure health needs review.',
-        type: 'animal',
-        href: '/dashboard/animals',
-      }]
-    })
-
-    const enclosedIds = new Set(data.enclosures.map((enclosure) => String(enclosure.id)))
-    const alerts = [
-      ...enclosureAlerts,
-      ...data.animals.filter((animal) =>
-        (!animal.enclosureId || !enclosedIds.has(String(animal.enclosureId))) &&
-        animal.health && animal.health !== 'healthy'
-      ).map((animal) => ({
-        id: `animal-${animal.id}`,
-        severity: animal.health === 'watch' ? 'medium' : 'high',
-        title: `${animal.tag || animal.name || 'Animal'}: ${animal.health}`,
-        detail: 'Animal health status needs review.',
-        type: 'animal',
-        href: '/dashboard/animals',
-      })),
-      ...data.inventory.filter((item) => Number(item.quantity) <= Number(item.minimumThreshold)).map((item) => ({
-        id: `inventory-${item.id}`,
-        severity: 'medium',
-        title: `${item.name}: stock is low`,
-        detail: `${Number(item.quantity || 0)} ${item.unit || ''} remaining (minimum ${Number(item.minimumThreshold || 0)}).`,
-        type: 'inventory',
-        href: '/dashboard/inventory',
-      })),
-      ...data.utilities.filter((utility) => utility.status === 'overdue').map((utility) => ({
-        id: `utility-${utility.id}`,
-        severity: 'medium',
-        title: `${utility.type}: bill overdue`,
-        detail: 'Review the overdue utility bill.',
-        type: 'utility',
-        href: '/dashboard/utilities',
-      })),
-    ]
-    const severity = { high: 0, medium: 1, low: 2 }
-    alerts.sort((a, b) => severity[a.severity] - severity[b.severity])
-    return { data: alerts, error: null }
+    return { data: getAlertRows(data), error: null }
   } catch (error) {
     return { data: null, error: error.message }
   }

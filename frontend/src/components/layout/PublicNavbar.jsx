@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils'
 function Logo() {
   return (
     <Link to="/" className="group flex items-center gap-2.5">
-      <span className="grid h-10 w-10 place-items-center rounded-xl border border-fresh-200/70 bg-fresh-50 shadow-[0_5px_16px_rgba(22,85,62,0.08)] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
-        <img src="/sprout.svg" alt="" className="h-7 w-7" />
+      <span className="grid h-12 w-12 place-items-center rounded-xl border border-fresh-200/70 bg-fresh-50 shadow-[0_5px_16px_rgba(22,85,62,0.08)] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
+        <img src="/sprout.svg" alt="" className="h-12 w-12" />
       </span>
       <span className="text-[17px] font-bold text-forest-900">KhamarBari</span>
     </Link>
@@ -77,7 +77,7 @@ export default function PublicNavbar() {
         <button
           className="grid h-10 w-10 place-items-center rounded-xl border border-forest-100 bg-white text-forest-800 shadow-sm transition-colors hover:bg-forest-50 md:hidden"
           onClick={() => setOpen((o) => !o)}
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-label={open ? t('nav.closeMenu') : t('nav.openMenu')}
           aria-expanded={open}
           aria-controls="public-mobile-menu"
         >

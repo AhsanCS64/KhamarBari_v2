@@ -1,4 +1,5 @@
 import { listAnimals } from './animalsService'
+import { listEnclosures } from './enclosuresService'
 import { listExpenses } from './expensesService'
 import { listItems } from './inventoryService'
 import { listProduction } from './productionService'
@@ -10,32 +11,49 @@ const isInDateRange = (record, from, to) => Boolean(record.date)
   && (!from || record.date >= from)
   && (!to || record.date <= to)
 
+const inFlightReportLoads = new Map()
+
 async function loadReports({ branchId, dateFrom, dateTo } = {}) {
   const filters = { ...(branchId && branchId !== 'all' ? { branchId } : {}) }
-  const results = await Promise.all([
-    listSales({ ...filters, dateFrom, dateTo }),
-    listExpenses({ ...filters, dateFrom, dateTo }),
-    listProduction({ ...filters, dateFrom, dateTo }),
-    listUtilities(filters),
-    listItems(filters),
-    listWorkers(filters),
-    listAnimals(filters),
-    listAttendance({ ...filters, dateFrom, dateTo }),
-    listPayments({ ...filters, dateFrom, dateTo }),
-  ])
-  const error = results.find((result) => result.error)?.error
-  if (error) throw new Error(error)
-  const [sales, expenses, production, utilities, inventory, workers, animals, attendance, payments] =
-    results.map((result) => result.data)
-  return {
-    sales: sales.filter((row) => isInDateRange(row, dateFrom, dateTo)),
-    expenses: expenses.filter((row) => isInDateRange(row, dateFrom, dateTo)),
-    production: production.filter((row) => isInDateRange(row, dateFrom, dateTo)),
-    utilities: utilities.filter((row) => (!dateFrom || row.billingPeriod >= dateFrom.slice(0, 7))
-      && (!dateTo || row.billingPeriod <= dateTo.slice(0, 7))),
-    inventory, workers, animals,
-    attendance: attendance.filter((row) => isInDateRange(row, dateFrom, dateTo)),
-    payments: payments.filter((row) => isInDateRange(row, dateFrom, dateTo)),
+  const cacheKey = JSON.stringify({ ...filters, dateFrom: dateFrom || '', dateTo: dateTo || '' })
+  let load = inFlightReportLoads.get(cacheKey)
+
+  if (!load) {
+    load = (async () => {
+      const results = await Promise.all([
+        listSales({ ...filters, dateFrom, dateTo }),
+        listExpenses({ ...filters, dateFrom, dateTo }),
+        listProduction({ ...filters, dateFrom, dateTo }),
+        listUtilities(filters),
+        listItems({ ...filters, dateFrom, dateTo }),
+        listWorkers(filters),
+        listAnimals(filters),
+        listAttendance({ ...filters, dateFrom, dateTo }),
+        listPayments({ ...filters, dateFrom, dateTo }),
+        listEnclosures({ ...filters, dateFrom, dateTo }),
+      ])
+      const error = results.find((result) => result.error)?.error
+      if (error) throw new Error(error)
+      const [sales, expenses, production, utilities, inventory, workers, animals, attendance, payments, enclosures] =
+        results.map((result) => result.data)
+      return {
+        sales: sales.filter((row) => isInDateRange(row, dateFrom, dateTo)),
+        expenses: expenses.filter((row) => isInDateRange(row, dateFrom, dateTo)),
+        production: production.filter((row) => isInDateRange(row, dateFrom, dateTo)),
+        utilities: utilities.filter((row) => (!dateFrom || row.billingPeriod >= dateFrom.slice(0, 7))
+          && (!dateTo || row.billingPeriod <= dateTo.slice(0, 7))),
+        inventory, workers, animals, enclosures,
+        attendance: attendance.filter((row) => isInDateRange(row, dateFrom, dateTo)),
+        payments: payments.filter((row) => isInDateRange(row, dateFrom, dateTo)),
+      }
+    })()
+    inFlightReportLoads.set(cacheKey, load)
+  }
+
+  try {
+    return await load
+  } finally {
+    if (inFlightReportLoads.get(cacheKey) === load) inFlightReportLoads.delete(cacheKey)
   }
 }
 
@@ -70,6 +88,9 @@ export async function getOverview(filters = {}) {
       totalWorkers: data.workers.length,
       monthlySalary: activeWorkers.reduce((sum, worker) => sum + Number(worker.salary || 0), 0),
       animals: data.animals.length,
+      enclosures: data.enclosures.length,
+      occupancy: data.enclosures.reduce((sum, enclosure) => sum + Number(enclosure.occupied || 0), 0),
+      capacity: data.enclosures.reduce((sum, enclosure) => sum + Number(enclosure.capacity || 0), 0),
       animalsByHealth: data.animals.reduce((counts, animal) => {
         const health = animal.health || 'healthy'
         counts[health] = (counts[health] || 0) + 1

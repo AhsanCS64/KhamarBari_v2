@@ -1,52 +1,101 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
   LayoutDashboard, Beef, Wallet, ShoppingCart, Milk, Package, GitBranch, Sun,
-  Zap, Users, BarChart3, Settings, X, ChevronLeft, ChevronRight,
+  Zap, Users, BarChart3, Settings, X, ChevronLeft,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store/authStore'
 import { useAppStore } from '@/store/appStore'
 
+// Same routes and order as before, now tagged with a section so the rail reads in chunks.
 const NAV = [
-  { to: '/dashboard', key: 'dashboard', icon: LayoutDashboard, end: true },
-  { to: '/dashboard/animals', key: 'animals', icon: Beef },
-  { to: '/dashboard/branches', key: 'branches', icon: GitBranch },
-  { to: '/dashboard/expenses', key: 'expenses', icon: Wallet },
-  { to: '/dashboard/sales', key: 'sales', icon: ShoppingCart },
-  { to: '/dashboard/production', key: 'production', icon: Milk },
-  { to: '/dashboard/inventory', key: 'inventory', icon: Package },
-  { to: '/dashboard/utilities', key: 'utilities', icon: Zap },
-  { to: '/dashboard/workers', key: 'workers', icon: Users },
-  { to: '/dashboard/reports', key: 'reports', icon: BarChart3 },
-  { to: '/dashboard/settings', key: 'settings', icon: Settings },
+  { to: '/dashboard', key: 'dashboard', icon: LayoutDashboard, end: true, group: 'overview' },
+  { to: '/dashboard/animals', key: 'animals', icon: Beef, group: 'livestock' },
+  { to: '/dashboard/branches', key: 'branches', icon: GitBranch, group: 'livestock' },
+  { to: '/dashboard/expenses', key: 'expenses', icon: Wallet, group: 'finance' },
+  { to: '/dashboard/sales', key: 'sales', icon: ShoppingCart, group: 'finance' },
+  { to: '/dashboard/production', key: 'production', icon: Milk, group: 'operations' },
+  { to: '/dashboard/inventory', key: 'inventory', icon: Package, group: 'operations' },
+  { to: '/dashboard/utilities', key: 'utilities', icon: Zap, group: 'operations' },
+  { to: '/dashboard/workers', key: 'workers', icon: Users, group: 'people' },
+  { to: '/dashboard/reports', key: 'reports', icon: BarChart3, group: 'people' },
+  { to: '/dashboard/settings', key: 'settings', icon: Settings, group: 'system' },
 ]
 
-function SidebarContent({
-  t,
-  closeSidebar,
-  navItems,
-  mobile = false,
-  collapsed = false,
-  toggleCollapse,
-}) {
+const GROUP_LABELS = {
+  overview: 'Overview',
+  livestock: 'Livestock',
+  finance: 'Money',
+  operations: 'Operations',
+  people: 'People & reports',
+  system: 'System',
+}
+
+function SidebarContent({ t, closeSidebar, navItems, mobile = false, collapsed = false }) {
   const reducedMotion = useReducedMotion()
+  const user = useAuthStore((state) => state.user)
+  const spotRef = useRef(null)
+  const [tip, setTip] = useState(null) // tooltip for the collapsed rail
+
   const activeTransition = reducedMotion
     ? { duration: 0 }
     : { type: 'spring', stiffness: 420, damping: 34 }
 
+  // Group the (already role-filtered) items, keeping their original order
+  const groups = useMemo(() => {
+    const out = []
+    navItems.forEach((item) => {
+      const last = out[out.length - 1]
+      if (last && last.id === item.group) last.items.push(item)
+      else out.push({ id: item.group, items: [item] })
+    })
+    return out
+  }, [navItems])
+
+  const order = useMemo(() => Object.fromEntries(navItems.map((n, i) => [n.to, i])), [navItems])
+
+  const displayName = user?.name || user?.full_name || user?.email?.split('@')[0] || 'Farm member'
+  const role = user?.role || ''
+
+  // Cursor-follow light across the nav (no re-render: writes CSS variables directly)
+  const onMove = (e) => {
+    const el = spotRef.current
+    if (!el || reducedMotion) return
+    const r = e.currentTarget.getBoundingClientRect()
+    el.style.setProperty('--mx', `${e.clientX - r.left}px`)
+    el.style.setProperty('--my', `${e.clientY - r.top}px`)
+    el.style.opacity = '1'
+  }
+  const onLeave = () => {
+    if (spotRef.current) spotRef.current.style.opacity = '0'
+  }
+
+  const showTip = (label) => (e) => {
+    if (!collapsed) return
+    const r = e.currentTarget.getBoundingClientRect()
+    setTip({ label, left: r.right + 14, top: r.top + r.height / 2 })
+  }
+  const hideTip = () => setTip(null)
+
   return (
-    <div className="sidebar-shell relative flex h-full flex-col overflow-hidden bg-gradient-to-b from-[#133e2b] via-[#174c34] to-[#0f3422] text-white select-none">
-      {/* 1. Refined Ambient Lighting & Background Textures */}
+    <div className="sidebar-shell relative flex h-full flex-col overflow-hidden bg-gradient-to-b from-[#0f3624] via-[#145034] to-[#0b2a1b] text-white select-none">
+      {/* Ambient layers (existing hooks kept) */}
       <div aria-hidden="true" className="sidebar-sunbeams pointer-events-none" />
       <div aria-hidden="true" className="sidebar-fieldlines pointer-events-none" />
 
-      {/* Subtle Ethereal Sun Watermark */}
+      {/* Warm light spilling in from the top corner */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -left-16 -top-24 h-64 w-64 rounded-full bg-[#d9f88c]/[0.13] blur-3xl"
+      />
+
+      {/* Slow-turning sun watermark */}
       <motion.div
         aria-hidden="true"
-        className="pointer-events-none absolute right-[-28px] top-[80px] z-0 text-[#f5d477]/[0.07]"
+        className="pointer-events-none absolute right-[-34px] top-[96px] z-0 text-[#f5d477]/[0.07]"
         animate={reducedMotion ? undefined : { rotate: 360, y: [0, -6, 0] }}
         transition={{
           rotate: { duration: 84, repeat: Infinity, ease: 'linear' },
@@ -56,37 +105,47 @@ function SidebarContent({
         <Sun className="h-44 w-44" strokeWidth={0.65} />
       </motion.div>
 
-      {/* Micro-grid Texture */}
+      {/* Micro-grid texture */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-[0.035] [background-image:linear-gradient(rgba(228,245,219,0.3)_1px,transparent_1px),linear-gradient(90deg,rgba(228,245,219,0.3)_1px,transparent_1px)] [background-size:28px_28px]"
       />
 
-      {/* 2. Brand Header */}
+      {/* Rolling hills at the foot of the rail */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 264 120"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-28 w-full"
+      >
+        <path d="M0 70 Q60 40 130 62 T264 48 V120 H0Z" fill="#d9f88c" opacity="0.045" />
+        <path d="M0 92 Q70 66 140 86 T264 76 V120 H0Z" fill="#d9f88c" opacity="0.06" />
+      </svg>
+
+      {/* ── Brand header ── */}
       <div
         className={cn(
-          'relative z-10 flex h-[4.75rem] shrink-0 items-center border-b border-white/[0.08] backdrop-blur-xs transition-all',
+          'relative z-10 flex h-[4.75rem] shrink-0 items-center border-b border-white/[0.08]',
           collapsed ? 'justify-center px-2' : 'justify-between px-4'
         )}
       >
         <NavLink
           to="/dashboard"
           onClick={closeSidebar}
-          className="group flex items-center gap-3 min-w-0"
+          className="group flex min-w-0 items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#d9f88c]/60"
           title={t('brand.name')}
         >
-          {/* Brand Icon */}
-          <span className="relative grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-white/30 shadow-[0_4px_16px_rgba(181,230,97,0.3)] transition-all duration-300 group-hover:-rotate-3 group-hover:scale-105">
-            <img src="/sprout.svg" alt="KhamarBari" className="h-16 w-16 drop-shadow-xs" />
+          <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#e6fba4] to-[#b6e463] shadow-[0_6px_20px_rgba(181,230,97,0.35),inset_0_1px_0_rgba(255,255,255,0.7)] ring-1 ring-white/40 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
+            <img src="/sprout.svg" alt="KhamarBari" className="h-9 w-9" />
           </span>
 
           {!collapsed && (
-            <span className="flex flex-col min-w-0 truncate">
-              <span className="text-[15px] font-extrabold tracking-tight text-[#f8faf6] leading-none transition-colors group-hover:text-white truncate">
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-[16px] font-extrabold leading-none tracking-tight text-[#f8faf6]">
                 {t('brand.name')}
               </span>
-              <span className="mt-1.5 text-[9px] font-bold tracking-[0.2em] text-[#9fc29d] uppercase leading-none">
-                FARM OPERATIONS
+              <span className="mt-1.5 truncate text-[11px] font-medium leading-none text-[#9fc29d]">
+                Farm operations
               </span>
             </span>
           )}
@@ -94,143 +153,164 @@ function SidebarContent({
 
         {mobile && (
           <button
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all shadow-xs"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-white outline-none transition-all hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-[#d9f88c]/60 active:scale-95"
             onClick={closeSidebar}
             aria-label={t('sidebar.hide', 'Hide sidebar')}
             title={t('sidebar.hide', 'Hide sidebar')}
           >
-            <X className="h-4.5 w-4.5" />
+            <X className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {/* 3. Navigation List */}
-      <nav className="sidebar-nav relative z-10 flex-1 space-y-1 overflow-y-auto px-2.5 pt-4 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {/* Section divider or title */}
-        {collapsed ? (
-          <div className="mx-auto my-2 w-6 border-t border-white/[0.12]" />
-        ) : (
-          <p className="px-3 pb-2 text-[10px] font-bold tracking-[0.18em] text-[#8fae92] uppercase truncate">
-            YOUR WORKSPACE
-          </p>
-        )}
+      {/* ── Navigation ── */}
+      <div className="relative z-10 min-h-0 flex-1" onMouseMove={onMove} onMouseLeave={onLeave}>
+        <div
+          ref={spotRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 opacity-0 transition-opacity duration-300"
+          style={{
+            background:
+              'radial-gradient(170px circle at var(--mx, 50%) var(--my, 50%), rgba(217,248,140,0.11), transparent 70%)',
+          }}
+        />
 
-        {navItems.map(({ to, key, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            onClick={closeSidebar}
-            title={collapsed ? t(`sidebar.${key}`) : undefined}
-            className={({ isActive }) =>
-              cn(
-                'group relative isolate flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 border border-transparent',
-                collapsed ? 'justify-center p-2.5 my-1' : 'gap-3 px-2.5 py-2',
-                isActive
-                  ? 'text-[#0d2a1a] font-semibold'
-                  : 'text-[#d0e0d1]/75 hover:border-white/[0.08] hover:bg-white/[0.06] hover:text-white'
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {/* Active Pill */}
-                {isActive && (
-                  <motion.span
-                    layoutId={mobile ? 'mobile-sidebar-active' : collapsed ? 'collapsed-sidebar-active' : 'desktop-sidebar-active'}
-                    className="absolute inset-0 z-0 rounded-xl bg-gradient-to-r from-[#d9f88c] to-[#cbf478] shadow-[0_4px_20px_rgba(181,230,97,0.22),inset_0_1px_1px_rgba(255,255,255,0.6)]"
-                    transition={activeTransition}
-                  />
-                )}
+        <nav
+          className="sidebar-nav relative z-10 h-full overflow-y-auto px-2.5 pb-6 pt-3 [-ms-overflow-style:none] [mask-image:linear-gradient(to_bottom,transparent,black_14px,black_calc(100%-28px),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          aria-label="Main"
+        >
+          {groups.map((group, gi) => (
+            <div key={group.id} className={gi === 0 ? '' : 'mt-3'}>
+              {collapsed ? (
+                gi > 0 && <div className="mx-auto mb-2 w-5 border-t border-white/[0.12]" />
+              ) : (
+                <p className="truncate px-3 pb-1.5 pt-1 text-[11px] font-semibold text-[#8fae92]">
+                  {t(`sidebar.groups.${group.id}`, GROUP_LABELS[group.id])}
+                </p>
+              )}
 
-                {/* Icon Container */}
-                <span
-                  className={cn(
-                    'relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-all duration-200',
-                    isActive
-                      ? 'bg-[#0d2a1a]/12 text-[#0d2a1a]'
-                      : 'bg-white/[0.04] text-[#a1c2a0] group-hover:bg-white/[0.08] group-hover:text-[#d5f786]'
-                  )}
-                >
-                  <Icon className="h-4 w-4" strokeWidth={isActive ? 2 : 1.75} />
-                </span>
+              <div className="space-y-1">
+                {group.items.map(({ to, key, icon: Icon, end }) => {
+                  const label = t(`sidebar.${key}`)
+                  return (
+                    <motion.div
+                      key={to}
+                      initial={reducedMotion ? false : { opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.35, delay: 0.04 + order[to] * 0.03, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <NavLink
+                        to={to}
+                        end={end}
+                        onClick={closeSidebar}
+                        onMouseEnter={showTip(label)}
+                        onMouseLeave={hideTip}
+                        onFocus={showTip(label)}
+                        onBlur={hideTip}
+                        aria-label={collapsed ? label : undefined}
+                        className={({ isActive }) =>
+                          cn(
+                            'group relative isolate flex items-center rounded-xl text-[13px] font-medium outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#d9f88c]/60',
+                            collapsed ? 'mx-auto h-11 w-11 justify-center' : 'h-10 gap-3 px-2.5',
+                            isActive ? 'font-semibold text-white' : 'text-[#c5d9c6]/75 hover:text-white'
+                          )
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            {/* Active glass pill with a lime edge */}
+                            {isActive && (
+                              <motion.span
+                                layoutId={mobile ? 'mobile-sidebar-active' : collapsed ? 'collapsed-sidebar-active' : 'desktop-sidebar-active'}
+                                className="absolute inset-0 z-0 rounded-xl bg-white/[0.1] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_24px_rgba(0,0,0,0.18)] ring-1 ring-inset ring-white/[0.14]"
+                                transition={activeTransition}
+                              >
+                                <span className="absolute bottom-2.5 left-0 top-2.5 w-[3px] rounded-r-full bg-[#d9f88c] shadow-[0_0_12px_rgba(217,248,140,0.9)]" />
+                              </motion.span>
+                            )}
 
-                {/* Nav Label (when expanded) */}
-                {!collapsed && (
-                  <span className="relative z-10 truncate text-[13px] tracking-normal">
-                    {t(`sidebar.${key}`)}
-                  </span>
-                )}
+                            <span
+                              className={cn(
+                                'relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-all duration-200',
+                                isActive
+                                  ? 'bg-[#d9f88c] text-[#0d2a1a] shadow-[0_4px_14px_rgba(217,248,140,0.4)]'
+                                  : 'bg-white/[0.05] text-[#a1c2a0] group-hover:scale-110 group-hover:bg-white/10 group-hover:text-[#d5f786]'
+                              )}
+                            >
+                              <Icon className="h-4 w-4" strokeWidth={isActive ? 2.1 : 1.75} />
+                            </span>
 
-                {/* Active Indicator Glowing Dot */}
-                {isActive && !collapsed && (
-                  <span className="relative z-10 ml-auto flex h-2 w-2 items-center justify-center">
-                    <span className="absolute h-2 w-2 rounded-full bg-[#1b502d]/40 animate-ping" />
-                    <span className="relative h-1.5 w-1.5 rounded-full bg-[#1b502d]" />
-                  </span>
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
+                            {!collapsed && (
+                              <span className="relative z-10 truncate tracking-normal">{label}</span>
+                            )}
+                          </>
+                        )}
+                      </NavLink>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+      </div>
 
-      {/* 4. Footer Polish */}
-      <div className="relative z-10 border-t border-white/[0.08] p-3 backdrop-blur-xs">
-        {mobile ? (
+      {/* ── Footer: signed-in member + version ── */}
+      <div className="relative z-10 border-t border-white/[0.08] p-3">
+        {mobile && (
           <button
             type="button"
             onClick={closeSidebar}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.1] hover:bg-white/[0.18] py-2 text-xs font-semibold text-white transition-all active:scale-98 shadow-xs"
+            className="mb-2 flex w-full items-center justify-center gap-2 rounded-xl bg-white/[0.1] py-2 text-xs font-semibold text-white outline-none transition-all hover:bg-white/[0.18] focus-visible:ring-2 focus-visible:ring-[#d9f88c]/60 active:scale-[0.98]"
           >
             <ChevronLeft className="h-4 w-4" />
             <span>{t('sidebar.hide', 'Hide sidebar')}</span>
           </button>
-        ) : collapsed ? (
-          <div className="flex flex-col items-center gap-2">
-            {toggleCollapse && (
-              <button
-                type="button"
-                onClick={toggleCollapse}
-                className="grid h-8 w-8 place-items-center rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-white/80 hover:text-white transition-all shadow-xs"
-                title={t('sidebar.expand', 'Expand sidebar')}
-                aria-label={t('sidebar.expand', 'Expand sidebar')}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            )}
-            <span className="text-[9px] font-mono text-[#b8dab6]/70">v2.4</span>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#a3e635] shadow-[0_0_6px_#a3e635]" />
-                <p className="text-[11px] font-bold text-[#e1efe0] tracking-tight">KhamarBari</p>
+        )}
+
+        <div
+          className={cn(
+            'flex items-center rounded-2xl border border-white/[0.08] bg-white/[0.05] backdrop-blur-sm',
+            collapsed ? 'mx-auto h-11 w-11 justify-center' : 'gap-2.5 p-2'
+          )}
+          onMouseEnter={showTip(displayName)}
+          onMouseLeave={hideTip}
+        >
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#e6fba4] to-[#a3e635] text-[13px] font-bold text-[#0d2a1a]">
+            {displayName.charAt(0).toUpperCase()}
+          </span>
+          {!collapsed && (
+            <>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[12px] font-semibold leading-tight text-[#eef6ec]">{displayName}</p>
+                <p className="truncate text-[11px] capitalize leading-tight text-[#8fae92]">
+                  {role || `© ${new Date().getFullYear()} Smart Agro`}
+                </p>
               </div>
-              <p className="mt-0.5 text-[10px] text-[#8fae92]/70 font-medium">
-                © {new Date().getFullYear()} · Smart Agro
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="rounded-md bg-white/[0.06] border border-white/[0.08] px-1.5 py-0.5 text-[9px] font-mono font-semibold text-[#b8dab6]">
+              <span className="rounded-md border border-white/[0.08] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[9px] font-semibold text-[#b8dab6]">
                 v2.4
               </span>
-              {toggleCollapse && (
-                <button
-                  type="button"
-                  onClick={toggleCollapse}
-                  className="grid h-7 w-7 place-items-center rounded-md text-white/60 hover:bg-white/10 hover:text-white transition-colors"
-                  title={t('sidebar.collapse', 'Collapse sidebar')}
-                  aria-label={t('sidebar.collapse', 'Collapse sidebar')}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Tooltip for the collapsed rail (fixed, so the shell can't clip it) */}
+      <AnimatePresence>
+        {collapsed && tip && (
+          <motion.div
+            key={tip.label}
+            initial={{ opacity: 0, x: -4 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="pointer-events-none fixed z-[60] -translate-y-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-[#0b2a1b] px-2.5 py-1.5 text-xs font-medium text-white shadow-xl"
+            style={{ left: tip.left, top: tip.top }}
+          >
+            {tip.label}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -248,36 +328,58 @@ export default function AppSidebar() {
     closeSidebar()
   }, [location.pathname, closeSidebar])
 
-  // Close mobile sidebar on Escape key
+  // Escape closes the drawer; Ctrl/Cmd + B toggles the desktop rail
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && sidebarOpen) {
         closeSidebar()
+        return
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        const el = e.target
+        const typing = el instanceof HTMLElement && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
+        if (typing) return
+        e.preventDefault()
+        toggleSidebarCollapsed()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [sidebarOpen, closeSidebar])
+  }, [sidebarOpen, closeSidebar, toggleSidebarCollapsed])
+
+  // Stop the page scrolling behind the open mobile drawer
+  useEffect(() => {
+    if (!sidebarOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [sidebarOpen])
 
   return (
     <>
-      {/* Desktop / Tablet Sidebar (Collapsible Rail) */}
+      {/* Desktop / tablet rail */}
       <aside
         className={cn(
-          'sticky top-0 hidden h-dvh shrink-0 border-r border-[#143e2b] transition-all duration-300 md:block shadow-[1px_0_12px_rgba(0,0,0,0.1)] z-20',
+          'sticky top-0 z-20 hidden h-dvh shrink-0 border-r border-[#143e2b] shadow-[1px_0_12px_rgba(0,0,0,0.1)] transition-[width] duration-300 ease-out md:block',
           sidebarCollapsed ? 'w-[4.75rem]' : 'w-[16.5rem]'
         )}
       >
-        <SidebarContent
-          t={t}
-          closeSidebar={closeSidebar}
-          navItems={visibleNav}
-          collapsed={sidebarCollapsed}
-          toggleCollapse={toggleSidebarCollapsed}
-        />
+        <SidebarContent t={t} closeSidebar={closeSidebar} navItems={visibleNav} collapsed={sidebarCollapsed} />
+
+        {/* Edge handle sits on the border, like a gate latch */}
+        <button
+          type="button"
+          onClick={toggleSidebarCollapsed}
+          title={`${sidebarCollapsed ? t('sidebar.expand', 'Expand sidebar') : t('sidebar.collapse', 'Collapse sidebar')} (Ctrl+B)`}
+          aria-label={sidebarCollapsed ? t('sidebar.expand', 'Expand sidebar') : t('sidebar.collapse', 'Collapse sidebar')}
+          aria-expanded={!sidebarCollapsed}
+          className="absolute -right-3 top-[4.75rem] z-30 grid h-6 w-6 place-items-center rounded-full border border-white/20 bg-[#174c34] text-[#d9f88c] shadow-lg outline-none transition hover:scale-110 hover:bg-[#1d5a3e] focus-visible:ring-2 focus-visible:ring-[#d9f88c]/70"
+        >
+          <ChevronLeft className={cn('h-3.5 w-3.5 transition-transform duration-300', sidebarCollapsed && 'rotate-180')} />
+        </button>
       </aside>
 
-      {/* Mobile drawer with balanced width and reliable dismiss */}
+      {/* Mobile drawer */}
       <AnimatePresence initial={false}>
         {sidebarOpen && (
           <>
@@ -286,15 +388,19 @@ export default function AppSidebar() {
               aria-label="Close navigation"
               role="button"
               tabIndex={0}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={closeSidebar}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && closeSidebar()}
             />
             <motion.aside
               key="sidebar-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation"
               className="fixed left-0 top-0 z-50 h-dvh w-[min(76vw,16rem)] max-w-[280px] shadow-[20px_0_60px_rgba(0,0,0,0.45)] md:hidden"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}

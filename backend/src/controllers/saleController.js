@@ -65,6 +65,7 @@ async function checkProductionStock({ farmId, branchId, itemType, quantity, igno
 const createSchema = z.object({
   itemType: z.string().min(1),
   animalId: z.string().optional().nullable(),
+  enclosureId: z.string().optional().nullable(),
   description: z.string().optional(),
   date: z.string().min(1),
   quantity: z.coerce.number().positive(),
@@ -78,6 +79,17 @@ const createSchema = z.object({
   notes: z.string().optional(),
   branchId: z.string().optional().nullable(),
 })
+
+async function adjustEnclosureOccupancy(enclosureId, delta, user, branchId) {
+  if (!enclosureId || !delta) return true
+
+  const filter = scopeToManagerBranch({ _id: enclosureId, farmId: user.farmId }, user)
+  if (branchId) filter.branchId = branchId
+  if (delta < 0) filter.occupied = { $gte: Math.abs(delta) }
+
+  const result = await Enclosure.updateOne(filter, { $inc: { occupied: delta } })
+  return result.modifiedCount === 1
+}
 
 export async function listSales(req, res, next) {
   try {
@@ -116,6 +128,52 @@ export async function createSale(req, res, next) {
       }
       data.branchId = req.user.branchId.toString()
     }
+    data.branchId = data.branchId || null
+    data.animalId = data.animalId || null
+    data.enclosureId = data.enclosureId || null
+    let animal = null
+    let enclosure = null
+    let occupancyEnclosureId = null
+
+    if (data.itemType === 'animal') {
+      if (!Number.isInteger(data.quantity)) {
+        return res.status(400).json({ error: 'Live animal quantity must be a whole number' })
+      }
+
+      if (data.enclosureId) {
+        const enclosureFilter = scopeToManagerBranch({
+          _id: data.enclosureId,
+          farmId: req.user.farmId,
+        }, req.user)
+        if (data.branchId) enclosureFilter.branchId = data.branchId
+        enclosure = await Enclosure.findOne(enclosureFilter)
+        if (!enclosure) return res.status(404).json({ error: 'Enclosure not found' })
+        if (!data.branchId && enclosure.branchId) data.branchId = enclosure.branchId.toString()
+      }
+
+      if (data.animalId) {
+        if (data.quantity !== 1) {
+          return res.status(400).json({ error: 'A sale linked to an individual animal must have quantity 1' })
+        }
+        animal = await Animal.findOne(scopeToManagerBranch({
+          _id: data.animalId,
+          farmId: req.user.farmId,
+          status: 'active',
+        }, req.user))
+        if (!animal) return res.status(409).json({ error: 'Animal is not available for sale' })
+        if (data.enclosureId && animal.enclosureId?.toString() !== data.enclosureId) {
+          return res.status(409).json({ error: 'Selected animal does not belong to this enclosure' })
+        }
+        occupancyEnclosureId = animal.enclosureId?.toString() || null
+        data.enclosureId = occupancyEnclosureId
+      } else {
+        occupancyEnclosureId = data.enclosureId || null
+      }
+    } else {
+      data.animalId = null
+      data.enclosureId = null
+    }
+
     const stockError = await checkProductionStock({
       farmId: req.user.farmId,
       branchId: data.branchId,
@@ -123,10 +181,17 @@ export async function createSale(req, res, next) {
       quantity: data.quantity,
     })
     if (stockError) return res.status(409).json({ error: stockError })
-    if (data.itemType === 'animal' && data.animalId) {
-      const animalFilter = scopeToManagerBranch({ _id: data.animalId, farmId: req.user.farmId, status: 'active' }, req.user)
-      const animal = await Animal.findOne(animalFilter)
-      if (!animal) return res.status(409).json({ error: 'Animal is not available for sale' })
+
+    if (occupancyEnclosureId) {
+      const adjusted = await adjustEnclosureOccupancy(
+        occupancyEnclosureId,
+        -(data.animalId ? 1 : data.quantity),
+        req.user,
+        data.branchId
+      )
+      if (!adjusted) {
+        return res.status(409).json({ error: 'The enclosure does not have enough occupied animals for this sale' })
+      }
     }
     const total = data.quantity * data.unitPrice
     const paidAmount = data.paymentStatus === 'paid' ? total : (data.paidAmount || 0)
@@ -134,35 +199,47 @@ export async function createSale(req, res, next) {
     
     const invoiceNo = `INV-${Date.now().toString().slice(-8)}`
 
-    const sale = await Sale.create({
-      farmId: req.user.farmId,
-      invoiceNo,
-      ...data,
-      total,
-      paidAmount,
-      outstanding,
-    })
-
-    // Link animal sale
-    if (data.itemType === 'animal' && data.animalId) {
-      const animal = await Animal.findOneAndUpdate(
-        scopeToManagerBranch({ _id: data.animalId, farmId: req.user.farmId, status: 'active' }, req.user),
-        { status: 'sold' },
-        { new: true }
-      )
-      if (!animal) {
-        await sale.deleteOne()
-        return res.status(409).json({ error: 'Animal is not available for sale' })
+    let animalMarkedSold = false
+    try {
+      if (animal) {
+        const updatedAnimal = await Animal.findOneAndUpdate(
+          scopeToManagerBranch({ _id: animal._id, farmId: req.user.farmId, status: 'active' }, req.user),
+          { status: 'sold' },
+          { new: true }
+        )
+        if (!updatedAnimal) {
+          if (occupancyEnclosureId) {
+            await adjustEnclosureOccupancy(occupancyEnclosureId, 1, req.user, data.branchId)
+          }
+          return res.status(409).json({ error: 'Animal is not available for sale' })
+        }
+        animalMarkedSold = true
       }
-      if (animal.enclosureId) {
-        await Enclosure.updateOne(
-          { _id: animal.enclosureId, farmId: req.user.farmId, occupied: { $gt: 0 } },
-          { $inc: { occupied: -1 } }
+
+      const sale = await Sale.create({
+        farmId: req.user.farmId,
+        invoiceNo,
+        ...data,
+        total,
+        paidAmount,
+        outstanding,
+      })
+
+      res.status(201).json({ sale })
+    } catch (error) {
+      if (animalMarkedSold) {
+        await Animal.updateOne({ _id: animal._id, farmId: req.user.farmId }, { status: 'active' })
+      }
+      if (occupancyEnclosureId) {
+        await adjustEnclosureOccupancy(
+          occupancyEnclosureId,
+          data.animalId ? 1 : data.quantity,
+          req.user,
+          data.branchId
         )
       }
+      throw error
     }
-
-    res.status(201).json({ sale })
   } catch (err) { next(err) }
 }
 
@@ -210,18 +287,19 @@ export async function deleteSale(req, res, next) {
     const sale = await Sale.findOneAndDelete(filter)
     if (!sale) return res.status(404).json({ error: 'Sale not found' })
     
-    // Revert animal status if applicable
-    if (sale.itemType === 'animal' && sale.animalId) {
-      const animal = await Animal.findOneAndUpdate(
-        scopeToManagerBranch({ _id: sale.animalId, farmId: req.user.farmId, status: 'sold' }, req.user),
-        { status: 'active' },
-        { new: true }
-      )
-      if (animal?.enclosureId) {
-        await Enclosure.updateOne(
-          { _id: animal.enclosureId, farmId: req.user.farmId },
-          { $inc: { occupied: 1 } }
+    if (sale.itemType === 'animal') {
+      let animal = null
+      if (sale.animalId) {
+        animal = await Animal.findOneAndUpdate(
+          scopeToManagerBranch({ _id: sale.animalId, farmId: req.user.farmId, status: 'sold' }, req.user),
+          { status: 'active' },
+          { new: true }
         )
+      }
+      const enclosureId = sale.enclosureId || animal?.enclosureId
+      const quantityToRestore = sale.animalId ? 1 : sale.quantity
+      if (enclosureId) {
+        await adjustEnclosureOccupancy(enclosureId, quantityToRestore, req.user, sale.branchId)
       }
     }
     res.json({ message: 'Sale deleted' })
