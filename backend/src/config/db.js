@@ -1,23 +1,37 @@
 import mongoose from 'mongoose'
 import { env } from './env.js'
 
+let connectionPromise
+
+mongoose.connection.on('disconnected', () => {
+  connectionPromise = undefined
+  console.warn('⚠ MongoDB disconnected')
+})
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✓ MongoDB reconnected')
+})
+
 export async function connectDB() {
-  try {
+  if (mongoose.connection.readyState === 1) return
+
+  if (!connectionPromise) {
     mongoose.set('strictQuery', true)
-    await mongoose.connect(env.mongodbUri, {
-      serverSelectionTimeoutMS: 10000,
-    })
-    const { host, name } = mongoose.connection
-    console.log(`✓ MongoDB connected: ${host}/${name}`)
-  } catch (err) {
-    console.error('✗ MongoDB connection failed:', err.message)
-    process.exit(1)
+    connectionPromise = mongoose
+      .connect(env.mongodbUri, {
+        serverSelectionTimeoutMS: 10000,
+      })
+      .then(() => {
+        const { host, name } = mongoose.connection
+        console.log(`✓ MongoDB connected: ${host}/${name}`)
+      })
+      .catch((err) => {
+        connectionPromise = undefined
+        console.error('✗ MongoDB connection failed:', err.message)
+        throw err
+      })
   }
 
-  mongoose.connection.on('disconnected', () => {
-    console.warn('⚠ MongoDB disconnected')
-  })
-  mongoose.connection.on('reconnected', () => {
-    console.log('✓ MongoDB reconnected')
-  })
+
+  await connectionPromise
 }
