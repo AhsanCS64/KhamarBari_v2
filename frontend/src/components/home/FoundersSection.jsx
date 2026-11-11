@@ -9,12 +9,12 @@ import adnanImg from '@/Photos/adnan.jpg'
 
 const FOUNDERS = [
   {
-    name: 'H. M. Ahsan Habib Kushal',
-    copyKey: 'kushal',
-    image: kushalImg || '/photos/kushal.jpg',
-    fallback: '/photos/kushal.jpg',
-    icon: Compass,
-    color: 'from-[#dcf88f] to-[#bce86f]',
+    name: 'Adnan Hassan',
+    copyKey: 'adnan',
+    image: adnanImg || '/photos/adnan.jpg',
+    fallback: '/photos/adnan.jpg',
+    icon: Terminal,
+    color: 'from-[#fde047] to-[#a3e635]',
   },
   {
     name: 'Homayra Binte Harun Heme',
@@ -25,12 +25,12 @@ const FOUNDERS = [
     color: 'from-[#6ee7b7] to-[#34d399]',
   },
   {
-    name: 'Adnan Hassan',
-    copyKey: 'adnan',
-    image: adnanImg || '/photos/adnan.jpg',
-    fallback: '/photos/adnan.jpg',
-    icon: Terminal,
-    color: 'from-[#fde047] to-[#a3e635]',
+    name: 'H. M. Ahsan Habib Kushal',
+    copyKey: 'kushal',
+    image: kushalImg || '/photos/kushal.jpg',
+    fallback: '/photos/kushal.jpg',
+    icon: Compass,
+    color: 'from-[#dcf88f] to-[#bce86f]',
   },
 ]
 

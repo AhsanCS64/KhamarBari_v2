@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 import AtmosphericBackdrop from '@/components/home/AtmosphericBackdrop'
@@ -20,10 +20,50 @@ import JoyfulCtaBanner from '@/components/home/JoyfulCtaBanner'
 
 import './HomePage.css'
 
+function getLocalTimeMood(date = new Date()) {
+  const hour = date.getHours()
+  if (hour >= 5 && hour < 10) return 'morning'
+  if (hour >= 10 && hour < 15) return 'meadow'
+  if (hour >= 15 && hour < 18) return 'harvest'
+  return 'dusk'
+}
+
 export default function HomePage() {
   const { t } = useTranslation()
-  const [mood, setMood] = useState('morning')
+  const [mood, setMood] = useState(getLocalTimeMood)
+  const [isAutoMood, setIsAutoMood] = useState(true)
+  const [isPastureVisible, setIsPastureVisible] = useState(false)
   const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    if (!isAutoMood) return undefined
+
+    const updateMood = () => setMood(getLocalTimeMood())
+    const updateWhenVisible = () => {
+      if (!document.hidden) updateMood()
+    }
+
+    updateMood()
+    const intervalId = window.setInterval(updateMood, 60_000)
+    window.addEventListener('focus', updateMood)
+    document.addEventListener('visibilitychange', updateWhenVisible)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', updateMood)
+      document.removeEventListener('visibilitychange', updateWhenVisible)
+    }
+  }, [isAutoMood])
+
+  const selectMood = (nextMood) => {
+    setMood(nextMood)
+    setIsAutoMood(false)
+  }
+
+  const enableAutoMood = () => {
+    setMood(getLocalTimeMood())
+    setIsAutoMood(true)
+  }
 
   return (
     <div className="relative overflow-hidden bg-cream min-h-screen">
@@ -52,7 +92,12 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}>
-              <MoodSelector currentMood={mood} onSelectMood={setMood} />
+              <MoodSelector
+                currentMood={mood}
+                onSelectMood={selectMood}
+                isAuto={isAutoMood}
+                onEnableAuto={enableAutoMood}
+              />
             </motion.div>
           </div>
 
@@ -131,7 +176,29 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="lg:col-span-7"
             >
-              <AnimatedPastureScene mood={mood} />
+              <div className={`mb-3 flex ${isPastureVisible ? 'justify-end' : 'min-h-48 items-center justify-center'}`}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-xl border-white/30 bg-white/10 text-white backdrop-blur-md hover:bg-white/20"
+                  onClick={() => setIsPastureVisible((visible) => !visible)}
+                  aria-controls="homepage-pasture-scene"
+                  aria-expanded={isPastureVisible}
+                >
+                  {isPastureVisible
+                    ? <EyeOff className="mr-2 h-4 w-4" aria-hidden="true" />
+                    : <Eye className="mr-2 h-5 w-4" aria-hidden="true" />}
+                  {isPastureVisible
+                    ? t('home.hero.hidePasture', 'Hide farm scene')
+                    : t('home.hero.showPasture', 'Show farm scene')}
+                </Button>
+              </div>
+              <div id="homepage-pasture-scene">
+                {isPastureVisible && (
+                  <AnimatedPastureScene mood={mood} />
+                )}
+              </div>
             </motion.div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { Sun, Sparkles, Wheat, Moon } from 'lucide-react'
+import { Sun, Sparkles, Wheat, Moon, Clock3 } from 'lucide-react'
 
 const MOODS = [
   { id: 'morning', labelKey: 'home.mood.morning', icon: Sun, color: 'text-amber-300' },
@@ -10,7 +10,7 @@ const MOODS = [
   { id: 'dusk', labelKey: 'home.mood.dusk', icon: Moon, color: 'text-teal-300' },
 ]
 
-export default function MoodSelector({ currentMood, onSelectMood }) {
+export default function MoodSelector({ currentMood, onSelectMood, isAuto, onEnableAuto }) {
   const { t } = useTranslation()
 
   return (
@@ -36,6 +36,31 @@ export default function MoodSelector({ currentMood, onSelectMood }) {
       </span>
 
       <div className="flex items-center gap-0.5">
+        <motion.button
+          type="button"
+          onClick={onEnableAuto}
+          whileTap={{ scale: 0.94 }}
+          className={`
+            relative isolate flex items-center gap-1.5 rounded-full
+            px-3 py-2 text-xs font-medium transition-colors duration-200
+            outline-none focus-visible:ring-2 focus-visible:ring-white/80
+            focus-visible:ring-offset-2 focus-visible:ring-offset-black/50
+            ${isAuto ? 'text-forest-950' : 'text-white/65 hover:text-white hover:bg-white/10'}
+          `}
+          aria-pressed={isAuto}
+          aria-label={t('home.mood.auto', 'Auto')}
+          title={t('home.mood.auto', 'Auto')}
+        >
+          {isAuto && (
+            <motion.span
+              layoutId="active-mood-pill"
+              className="absolute inset-0 -z-10 rounded-full bg-gradient-to-br from-fresh-200 via-yellow-200 to-fresh-300 shadow-[0_2px_14px_rgba(74,222,128,0.3)] ring-1 ring-white/40"
+              transition={{ type: 'spring', stiffness: 500, damping: 35, mass: 0.7 }}
+            />
+          )}
+          <Clock3 className={`h-3.5 w-3.5 shrink-0 ${isAuto ? 'text-forest-950' : 'text-sky-300'}`} strokeWidth={2} />
+          <span className="hidden md:inline whitespace-nowrap">{t('home.mood.auto', 'Auto')}</span>
+        </motion.button>
         {MOODS.map((m) => {
           const Icon = m.icon
           const isActive = currentMood === m.id

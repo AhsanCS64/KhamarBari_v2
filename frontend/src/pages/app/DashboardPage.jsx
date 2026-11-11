@@ -111,6 +111,45 @@ const smooth = (pts) =>
     return `${d} C${mx},${a[i - 1][1]} ${mx},${y} ${x},${y}`
   }, '')
 
+
+
+
+const DASHBOARD_SUN_RAYS = Array.from({ length: 19 }, (_, i) => {
+  const angle = Math.PI + (Math.PI * i) / 18
+  const center = 9
+  const symmetry = 1 - Math.abs(i - center) / center
+
+  const rhythm = [1, 0.76, 1.12, 0.86, 1.04][i % 5]
+  const startRadius = 63 + Math.sin(i * 0.8) * 2
+
+  const baseLength = 37 + symmetry * 23
+  const compactLength = baseLength * rhythm
+  const expandedLength = compactLength + 19 + symmetry * 13
+
+  const cos = Math.cos(angle)
+  const sin = Math.sin(angle)
+
+  const drift = Math.sin(i * 1.37) * 1.2
+  const originRadius = startRadius + drift
+
+  return {
+    x1: 180 + cos * originRadius,
+    y1: 174 + sin * originRadius,
+
+    compactX2: 180 + cos * (originRadius + compactLength),
+    compactY2: 174 + sin * (originRadius + compactLength),
+
+    expandedX2: 180 + cos * (originRadius + expandedLength),
+    expandedY2: 174 + sin * (originRadius + expandedLength),
+
+    width: 2.8 + symmetry * 1.9 + (i % 3 === 0 ? 0.7 : 0),
+    opacity: 0.68 + symmetry * 0.27,
+  }
+})
+
+
+
+
 function useCountUp(target, duration = 900) {
   const reduced = useReducedMotion()
   const [v, setV] = useState(reduced ? target : 0)
@@ -296,6 +335,7 @@ const ALERT_STYLES = {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ModernizedFarmDashboard() {
   const { t, i18n } = useTranslation()
+  const reducedMotion = useReducedMotion()
   const farm = useAuthStore((state) => state.farm)
   const user = useAuthStore((state) => state.user)
   const selectedBranchId = useAppStore((state) => state.selectedBranchId)
@@ -455,17 +495,36 @@ export default function ModernizedFarmDashboard() {
         {/* Hero */}
         <Reveal i={0}>
           <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0f3624] via-[#145034] to-[#1b6a45] p-6 text-white shadow-[0_24px_48px_-24px_rgba(15,54,36,0.7)] md:p-8">
-            {/* Sun and hills, echoing the pasture scene */}
+            {/* Sunrise and hills, echoing the homepage landscape */}
             <svg aria-hidden="true" viewBox="0 0 520 220" className="pointer-events-none absolute bottom-0 right-0 h-full w-auto max-w-[70%] opacity-90" preserveAspectRatio="xMaxYMax slice">
               <defs>
-                <radialGradient id="heroSun" cx="0.5" cy="0.5" r="0.5">
-                  <stop offset="0%" stopColor="#fef08a" stopOpacity="0.95" />
-                  <stop offset="45%" stopColor="#d9f88c" stopOpacity="0.35" />
+                <linearGradient id="dashboardSunCore" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fffdf0" />
+                  <stop offset="48%" stopColor="#fde047" />
+                  <stop offset="100%" stopColor="#fb923c" />
+                </linearGradient>
+                <radialGradient id="dashboardSunGlow" cx="0.5" cy="0.5" r="0.5">
+                  <stop offset="0%" stopColor="#fef08a" stopOpacity="0.42" />
+                  <stop offset="45%" stopColor="#d9f88c" stopOpacity="0.2" />
                   <stop offset="100%" stopColor="#d9f88c" stopOpacity="0" />
                 </radialGradient>
               </defs>
-              <circle cx="400" cy="70" r="110" fill="url(#heroSun)" />
-              <circle cx="400" cy="70" r="26" fill="#fef9c3" />
+              <motion.circle cx="400" cy="94" r="96" fill="url(#dashboardSunGlow)"
+                animate={reducedMotion ? undefined : { opacity: [0.8, 1, 0.8], scale: [0.97, 1.03, 0.97] }}
+                transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }} />
+              <g transform="translate(220 -80)">
+                <path d="M 126 174 A 54 54 0 0 1 234 174 Z" fill="url(#dashboardSunCore)" stroke="#fff7d6" strokeOpacity="0.85" strokeWidth="1.6" />
+                {DASHBOARD_SUN_RAYS.map((ray, i) => (
+                  <motion.line key={i} x1={ray.x1} y1={ray.y1} x2={ray.compactX2} y2={ray.compactY2}
+                    animate={reducedMotion ? undefined : {
+                      x2: [ray.compactX2, ray.expandedX2, ray.compactX2],
+                      y2: [ray.compactY2, ray.expandedY2, ray.compactY2],
+                      opacity: [0.62, 1, 0.62],
+                    }}
+                    transition={{ duration: 18 + (i % 5) * 1.2, delay: i * 0.16, repeat: Infinity, ease: 'easeInOut' }}
+                    stroke={i % 2 === 0 ? '#fde047' : '#fff0b3'} strokeWidth={ray.width} strokeLinecap="round" />
+                ))}
+              </g>
               <path d="M0 170 Q120 120 260 160 T520 140 V220 H0Z" fill="#d9f88c" opacity="0.08" />
               <path d="M0 195 Q140 160 280 188 T520 172 V220 H0Z" fill="#d9f88c" opacity="0.12" />
             </svg>
