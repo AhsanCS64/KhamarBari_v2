@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { useAppStore } from './appStore'
 import * as authService from '@/services/authService'
 import { updateFarm as updateFarmService } from '@/services/profileService'
 
@@ -33,6 +34,7 @@ export const useAuthStore = create((set, get) => ({
 
   async logout() {
     await authService.logout()
+    useAppStore.setState({ selectedBranchId: 'all', sidebarOpen: false })
     set({ user: null, farm: null, token: null, status: 'unauthenticated' })
   },
 

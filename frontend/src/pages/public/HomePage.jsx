@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, useReducedMotion } from 'framer-motion'
@@ -6,18 +6,16 @@ import { ArrowRight, Eye, EyeOff, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 import AtmosphericBackdrop from '@/components/home/AtmosphericBackdrop'
-import CursorPollenTrail from '@/components/home/CursorPollenTrail'
 import MoodSelector from '@/components/home/MoodSelector'
-import AnimatedPastureScene from '@/components/home/AnimatedPastureScene'
-import LiveImpactTicker from '@/components/home/LiveImpactTicker'
+const AnimatedPastureScene = lazy(() => import('@/components/home/AnimatedPastureScene'))
 import FeatureBentoGrid from '@/components/home/FeatureBentoGrid'
-import FarmRoiCalculator from '@/components/home/FarmRoiCalculator'
-import InteractiveDayTimeline from '@/components/home/InteractiveDayTimeline'
-import FoundersSection from '@/components/home/FoundersSection'
-import FarmerTestimonials from '@/components/home/FarmerTestimonials'
-import InteractiveFaq from '@/components/home/InteractiveFaq'
-import JoyfulCtaBanner from '@/components/home/JoyfulCtaBanner'
+const FarmRoiCalculator = lazy(() => import('@/components/home/FarmRoiCalculator'))
+const InteractiveDayTimeline = lazy(() => import('@/components/home/InteractiveDayTimeline'))
+const FoundersSection = lazy(() => import('@/components/home/FoundersSection'))
+const InteractiveFaq = lazy(() => import('@/components/home/InteractiveFaq'))
+const JoyfulCtaBanner = lazy(() => import('@/components/home/JoyfulCtaBanner'))
 
+import DeferredSection from '@/components/common/DeferredSection'
 import './HomePage.css'
 
 function getLocalTimeMood(date = new Date()) {
@@ -74,7 +72,7 @@ export default function HomePage() {
         aria-labelledby="hero-heading"
       >
         <AtmosphericBackdrop mood={mood} />
-        <CursorPollenTrail mood={mood} />
+
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-16 sm:pb-24 relative z-10">
           {/* Top Bar */}
@@ -196,7 +194,7 @@ export default function HomePage() {
               </div>
               <div id="homepage-pasture-scene">
                 {isPastureVisible && (
-                  <AnimatedPastureScene mood={mood} />
+                  <Suspense fallback={<p className="py-8 text-center text-sm text-white" role="status">{t('common.loading')}</p>}><AnimatedPastureScene mood={mood} /></Suspense>
                 )}
               </div>
             </motion.div>
@@ -208,12 +206,12 @@ export default function HomePage() {
       <FeatureBentoGrid />
 
       {/* About Us · The Founders & Developers */}
-      <FoundersSection />
+      <DeferredSection><FoundersSection /></DeferredSection>
 
-      <FarmRoiCalculator />
-      <InteractiveDayTimeline />
-      <InteractiveFaq />
-      <JoyfulCtaBanner />
+      <DeferredSection><FarmRoiCalculator /></DeferredSection>
+      <DeferredSection><InteractiveDayTimeline /></DeferredSection>
+      <DeferredSection><InteractiveFaq /></DeferredSection>
+      <DeferredSection><JoyfulCtaBanner /></DeferredSection>
     </div>
   )
 }

@@ -21,7 +21,9 @@ export default function BranchSelector() {
 
   useEffect(() => {
     if (!farm) return
-    listBranches(farm.id).then(({ data }) => setBranches(data || []))
+    let active = true
+    listBranches(farm.id).then(({ data }) => { if (active) setBranches(data || []) })
+    return () => { active = false }
   }, [farm?.id, branchRevision])
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function BranchSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="inline-flex items-center gap-2 rounded-xl border border-forest-100 bg-white px-3 h-10 text-sm font-medium text-forest-800 hover:bg-sage/60">
+        <button aria-label={`${t('branch.select')}: ${current.name}`} className="inline-flex items-center gap-2 rounded-xl border border-forest-100 bg-white px-3 h-10 text-sm font-medium text-forest-800 hover:bg-sage/60">
           <GitBranch className="h-4 w-4 text-forest-700" />
           <span className="hidden sm:inline truncate max-w-[140px]">{current.name}</span>
           <ChevronDown className="h-4 w-4 opacity-60" />

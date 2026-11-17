@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Download, Filter, Pencil, Plus, Search, Trash2, Wallet } from 'lucide-react'
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
@@ -32,11 +32,14 @@ export default function ExpensesPage() {
   const [editing, setEditing] = useState(null)
   const [confirm, setConfirm] = useState({ open: false, row: null, loading: false })
 
+  const requestId = useRef(0)
   const refresh = async () => {
+    const request = ++requestId.current
     setLoading(true)
     setError('')
     const filters = { farmId: farm?.id, branchId: selectedBranchId, search, category, dateFrom, dateTo }
     const result = await listExpenses(filters)
+    if (request !== requestId.current) return
     if (result.error) {
       setError(result.error)
       setLoading(false)
@@ -44,6 +47,7 @@ export default function ExpensesPage() {
     }
     setRows(result.data || [])
     const summary = await getExpenseTotals({ farmId: farm?.id, branchId: selectedBranchId, dateFrom, dateTo })
+    if (request !== requestId.current) return
     setTotals(summary.data || { total: 0, count: 0, byCategory: {} })
     setLoading(false)
   }
@@ -57,8 +61,9 @@ export default function ExpensesPage() {
       return { name: item?.label || id, value, color: item?.color || '#6b8371' }
     })
     .sort((a, b) => b.value - a.value), [totals.byCategory])
-  const pageRows = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageRows = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
   const money = (value) => `৳${Number(value || 0).toLocaleString(i18n.language === 'bn' ? 'bn-BD' : 'en-US')}`
 
   const exportCsv = () => {
@@ -78,7 +83,11 @@ export default function ExpensesPage() {
   const handleDelete = async () => {
     setConfirm((current) => ({ ...current, loading: true }))
     const result = await deleteExpense(confirm.row.id)
-    if (result.error) setError(result.error)
+    if (result.error) {
+      setError(result.error)
+      setConfirm({ open: false, row: null, loading: false })
+      return
+    }
     setConfirm({ open: false, row: null, loading: false })
     await refresh()
   }
@@ -161,7 +170,7 @@ export default function ExpensesPage() {
                   <tfoot className="bg-sage/40"><tr><td colSpan={3} className="px-4 py-3 text-xs font-semibold uppercase text-forest-700/70">{t('expenses.pageTotal')}</td><td className="px-4 py-3 text-right font-bold tabular-nums text-forest-900">{money(pageRows.reduce((sum, row) => sum + row.amount, 0))}</td><td colSpan={2} /></tr></tfoot>
                 </table>
               </div>
-              {totalPages > 1 && <div className="flex items-center justify-between border-t border-forest-50 px-4 py-3 text-sm"><span className="text-forest-700/60">{t('common.page')} {page} / {totalPages}</span><div className="flex gap-1"><Button size="sm" variant="outline" disabled={page === 1} onClick={() => setPage((value) => value - 1)}>{t('common.prev')}</Button><Button size="sm" variant="outline" disabled={page === totalPages} onClick={() => setPage((value) => value + 1)}>{t('common.next')}</Button></div></div>}
+              {totalPages > 1 && <div className="flex items-center justify-between border-t border-forest-50 px-4 py-3 text-sm"><span className="text-forest-700/60">{t('common.page')} {currentPage} / {totalPages}</span><div className="flex gap-1"><Button size="sm" variant="outline" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>{t('common.prev')}</Button><Button size="sm" variant="outline" disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)}>{t('common.next')}</Button></div></div>}
             </>
           )}
         </div>

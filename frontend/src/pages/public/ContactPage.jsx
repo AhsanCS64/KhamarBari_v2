@@ -18,13 +18,13 @@ const schema = z.object({
 export default function ContactPage() {
   const { t } = useTranslation()
   const [sent, setSent] = useState(false)
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm({ resolver: zodResolver(schema) })
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({ resolver: zodResolver(schema) })
 
-  const onSubmit = async () => {
-    await new Promise((r) => setTimeout(r, 600))
+  const onSubmit = (values) => {
+    const subject = encodeURIComponent(`KhamarBari enquiry from ${values.name}`)
+    const body = encodeURIComponent(`${values.message}\n\nFrom: ${values.name}\nReply to: ${values.email}`)
+    window.location.href = `mailto:hello@khamar.app?subject=${subject}&body=${body}`
     setSent(true)
-    reset()
-    setTimeout(() => setSent(false), 4000)
   }
 
   return (
@@ -59,9 +59,9 @@ export default function ContactPage() {
             <div className="flex items-center gap-3">
               <Button type="submit" disabled={isSubmitting}>
                 <Send className="h-4 w-4" />
-                {isSubmitting ? t('common.loading') : t('common.sendMessage')}
+                {isSubmitting ? t('common.loading') : t('contact.openEmail', 'Open email app')}
               </Button>
-              {sent && <span className="text-sm text-fresh-600 animate-fade-up">{t('contact.success')}</span>}
+              {sent && <span role="status" className="text-sm text-forest-700">{t('contact.emailDraft', 'Continue in your email app to send. Your message has not been sent yet.')}</span>}
             </div>
           </form>
         </div>

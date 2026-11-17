@@ -13,7 +13,7 @@ export const DialogContent = React.forwardRef(({ className, children, ...props }
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-card border border-forest-50 max-h-[90dvh] overflow-y-auto',
+        'fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-card border border-forest-50 max-h-[90dvh] overflow-y-auto',
         className
       )}
       {...props}
@@ -29,7 +29,7 @@ export const DialogContent = React.forwardRef(({ className, children, ...props }
 DialogContent.displayName = 'DialogContent'
 
 export const DialogHeader = ({ className, ...props }) => (
-  <div className={cn('mb-4', className)} {...props} />
+  <div className={cn('mb-5 pr-7', className)} {...props} />
 )
 export const DialogTitle = React.forwardRef(({ className, ...props }, ref) => (
   <DialogPrimitive.Title ref={ref} className={cn('text-lg font-semibold text-forest-900', className)} {...props} />

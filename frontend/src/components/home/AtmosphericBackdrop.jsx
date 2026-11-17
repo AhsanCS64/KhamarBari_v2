@@ -1291,7 +1291,7 @@ export default function AtmosphericBackdrop({ mood = 'morning' }) {
             <stop offset="0%" stopColor={theme.sunCorona} /><stop offset="100%" stopColor={theme.sunCorona} stopOpacity="0" />
           </radialGradient>
           <radialGradient id="bdHorizonGlow">
-            <stop offset="0%" stopColor={theme.sunColor} stopOpacity="0.35" /><stop offset="100%" stopColor={theme.sunColor} stopOpacity="0" />
+            <stop offset="3%" stopColor={theme.sunColor} stopOpacity="0.35" /><stop offset="100%" stopColor={theme.sunColor} stopOpacity="0" />
           </radialGradient>
           <radialGradient id="bdMoonGlow">
             <stop offset="0%" stopColor="#d7f5ff" stopOpacity="0.3" />

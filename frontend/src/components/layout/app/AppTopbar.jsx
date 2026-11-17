@@ -54,10 +54,10 @@ export default function AppTopbar() {
 
         <div className="flex min-w-0 items-center gap-3">
           {farm?.logo ? (
-            <img src={farm.logo} alt="" className="h-14 w-14 rounded-xl border border-forest-200 object-cover shadow-xs" />
+            <img src={farm.logo} alt="" className="h-10 w-10 rounded-xl border border-forest-200 object-cover shadow-xs" />
           ) : (
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-forest-200/50 shadow-[0_2px_10px_rgba(181,230,97,0.35)]">
-              <img src="/sprout.svg" alt="KhamarBari" className="h-12 w-12 drop-shadow-xs" />
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#dcf88f] to-[#bce86f] ring-1 ring-forest-200/50 shadow-[0_2px_10px_rgba(181,230,97,0.35)]">
+              <img src="/sprout.svg" alt="KhamarBari" className="h-9 w-9 drop-shadow-xs" />
             </div>
           )}
           <div className="hidden sm:block min-w-0">
@@ -67,7 +67,7 @@ export default function AppTopbar() {
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <div className="hidden md:block"><BranchSelector /></div>
+          <div className="block"><BranchSelector /></div>
 
           {['owner', 'admin'].includes(user?.role) && (
             <Button size="sm" variant="outline" className="hidden sm:inline-flex" onClick={() => setBranchOpen(true)}>
@@ -80,7 +80,7 @@ export default function AppTopbar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-forest text-xs font-semibold text-white shadow-[0_0_0_1px_rgba(156,201,180,0.7),0_4px_12px_rgba(15,61,46,0.16)] transition-transform hover:scale-105">
+              <button aria-label={t('profile.title')} className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-forest text-xs font-semibold text-white shadow-[0_0_0_1px_rgba(156,201,180,0.7),0_4px_12px_rgba(15,61,46,0.16)] transition-transform hover:scale-105">
                 {user?.avatar ? (
                   <img src={user.avatar} alt={user.name || 'User'} className="h-full w-full object-cover" />
                 ) : (

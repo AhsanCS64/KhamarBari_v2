@@ -1,33 +1,39 @@
-import { useEffect } from 'react'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { createBrowserRouter, RouterProvider, Navigate, useRouteError } from 'react-router-dom'
 import PublicLayout from '@/components/layout/PublicLayout'
-import AppLayout from '@/components/layout/app/AppLayout'
-import HomePage from '@/pages/public/HomePage'
-import AboutPage from '@/pages/public/AboutPage'
-import ContactPage from '@/pages/public/ContactPage'
-import LoginPage from '@/pages/auth/LoginPage'
-import SignupPage from '@/pages/auth/SignupPage'
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
-import DashboardPage from '@/pages/app/DashboardPage'
-import AnimalsPage from '@/pages/app/AnimalsPage'
-import ExpensesPage from '@/pages/app/ExpensesPage'
-import SalesPage from '@/pages/app/SalesPage'
-import ProductionPage from '@/pages/app/ProductionPage'
-import InventoryPage from '@/pages/app/InventoryPage'
-import UtilitiesPage from '@/pages/app/UtilitiesPage'
-import WorkersPage from '@/pages/app/WorkersPage'
-import ReportsPage from '@/pages/app/ReportsPage'
-import BranchesPage from '@/pages/app/BranchesPage'
-import SettingsPage from '@/pages/app/SettingsPage'
-import ProfilePage from '@/pages/app/ProfilePage'
-import NotFoundPage from '@/pages/NotFoundPage'
+const AppLayout = lazy(() => import('@/components/layout/app/AppLayout'))
+const HomePage = lazy(() => import('@/pages/public/HomePage'))
+const AboutPage = lazy(() => import('@/pages/public/AboutPage'))
+const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
+const SignupPage = lazy(() => import('@/pages/auth/SignupPage'))
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
+const DashboardPage = lazy(() => import('@/pages/app/DashboardPage'))
+const AnimalsPage = lazy(() => import('@/pages/app/AnimalsPage'))
+const ExpensesPage = lazy(() => import('@/pages/app/ExpensesPage'))
+const SalesPage = lazy(() => import('@/pages/app/SalesPage'))
+const ProductionPage = lazy(() => import('@/pages/app/ProductionPage'))
+const InventoryPage = lazy(() => import('@/pages/app/InventoryPage'))
+const UtilitiesPage = lazy(() => import('@/pages/app/UtilitiesPage'))
+const WorkersPage = lazy(() => import('@/pages/app/WorkersPage'))
+const ReportsPage = lazy(() => import('@/pages/app/ReportsPage'))
+const BranchesPage = lazy(() => import('@/pages/app/BranchesPage'))
+const SettingsPage = lazy(() => import('@/pages/app/SettingsPage'))
+const ProfilePage = lazy(() => import('@/pages/app/ProfilePage'))
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
 import ProtectedRoute from '@/routes/ProtectedRoute'
 import PublicOnlyRoute from '@/routes/PublicOnlyRoute'
 import { useAuthStore } from '@/store/authStore'
 
+function RouteError() {
+  const error = useRouteError()
+  return <div className="route-loading"><div className="max-w-md rounded-2xl border border-forest-100 bg-white p-8 text-center shadow-soft"><h1 className="text-xl font-bold">This page could not load</h1><p className="mt-3 text-sm text-forest-700">Please reload to try again. Your saved farm records are unaffected.</p><button className="mt-5 rounded-xl bg-forest px-5 py-3 text-white" onClick={() => window.location.reload()}>Reload page</button><a className="ml-4 text-sm underline" href="/">Go home</a>{import.meta.env.DEV && <p className="mt-4 break-words text-xs">{error?.message}</p>}</div></div>
+}
+
 const router = createBrowserRouter([
   {
     path: '/',
+    errorElement: <RouteError />,
     element: <PublicLayout />,
     children: [
       { index: true, element: <HomePage /> },
@@ -35,11 +41,12 @@ const router = createBrowserRouter([
       { path: 'contact', element: <ContactPage /> },
     ],
   },
-  { path: '/login', element: <PublicOnlyRoute><LoginPage /></PublicOnlyRoute> },
-  { path: '/signup', element: <PublicOnlyRoute><SignupPage /></PublicOnlyRoute> },
-  { path: '/forgot-password', element: <PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute> },
+  { path: '/login', errorElement: <RouteError />, element: <PublicOnlyRoute><LoginPage /></PublicOnlyRoute> },
+  { path: '/signup', errorElement: <RouteError />, element: <PublicOnlyRoute><SignupPage /></PublicOnlyRoute> },
+  { path: '/forgot-password', errorElement: <RouteError />, element: <PublicOnlyRoute><ForgotPasswordPage /></PublicOnlyRoute> },
   {
     path: '/dashboard',
+    errorElement: <RouteError />,
     element: <ProtectedRoute><AppLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <DashboardPage /> },
@@ -63,5 +70,5 @@ const router = createBrowserRouter([
 export default function AppRouter() {
   const hydrate = useAuthStore((s) => s.hydrate)
   useEffect(() => { hydrate() }, [hydrate])
-  return <RouterProvider router={router} />
+  return <Suspense fallback={<div className="route-loading" role="status"><img src="/sprout.svg" alt="" /><span>Loading KhamarBari...</span></div>}><RouterProvider router={router} /></Suspense>
 }

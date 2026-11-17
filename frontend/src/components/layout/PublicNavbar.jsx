@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -21,6 +21,12 @@ function Logo() {
 export default function PublicNavbar() {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
+  useEffect(() => {
+    if (!open) return
+    const closeOnEscape = (event) => { if (event.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [open])
   const reducedMotion = useReducedMotion()
   const activeTransition = reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 32 }
 

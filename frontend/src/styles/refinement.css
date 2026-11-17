@@ -1,0 +1,31 @@
+/* Shared visual language: quiet surfaces, forest ink and cultivated green. */
+:root { --color-cream: #f6f7f2; --color-cream-50: #fcfdf9; --color-forest-100: #dce7df; --shadow-soft: 0 2px 4px #163b2410, 0 8px 24px #163b2405; --shadow-card: 0 2px 5px #163b2408, 0 12px 32px #163b2408; }
+html { scroll-padding-top: 100px; }
+body { margin: 0; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:not(:disabled), select { cursor: pointer; }
+:focus-visible { outline: 3px solid #619d48; outline-offset: 4px; }
+::selection { background: #d9f88c; color: #123c29; }
+.container { max-width: 1240px; }
+.sunlit-workspace { background: #f4f6f1; }
+.workspace-main { width: 100%; max-width: 1560px; margin-inline: auto; }
+.workspace-main > div { padding: clamp(18px, 2.6vw, 40px); }
+.workspace-main > div > header:first-child { padding-bottom: 22px; border-bottom: 1px solid #dce6dd; margin-bottom: 24px; }
+.workspace-main h1 { letter-spacing: -.04em; font-size: clamp(1.65rem, 2.4vw, 2.15rem); }
+.workspace-main table { font-variant-numeric: tabular-nums; }
+.workspace-main th { padding-block: 15px; font-size: 10px; letter-spacing: .1em; }
+.workspace-main td { padding-block: 16px; }
+.workspace-main tbody tr { transition: background-color .15s; }
+.workspace-main tbody tr:hover { background: #f5f8f1; }
+.workspace-main input, .workspace-main select { min-height: 42px; }
+.card-soft { border-radius: 20px; border-color: #dce7df; box-shadow: var(--shadow-card); }
+.route-loading { min-height: 65vh; display: flex; gap: 14px; align-items: center; justify-content: center; color: #24583b; font-size: 14px; }
+.route-loading img { width: 40px; }
+.skip-link { position: fixed; top: 12px; left: 12px; z-index: 100; transform: translateY(-160%); padding: 12px 18px; border-radius: 12px; background: #143e2b; color: white; }
+.skip-link:focus { transform: translateY(0); }
+.home-hero-container { min-height: min(790px, 95vh); margin: 12px; border-radius: 28px; }
+.auth-layout input { min-height: 46px; border-radius: 11px; }
+@media (max-width: 767px) { .home-hero-container { margin: 8px; border-radius: 20px; min-height: auto; } .workspace-main > div { padding: 18px 14px; } .workspace-main > div > header:first-child { gap: 16px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+.deferred-section { min-height: 360px; }
