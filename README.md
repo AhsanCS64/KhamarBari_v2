@@ -1,296 +1,260 @@
+<div align="center">
+
 # 🌱 KhamarBari
+
 ### Industrial-Scale Farm Management System
+
+**One platform for livestock, poultry, fisheries, workforce, production, finance, and multi-branch operations.**
 
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat-square&logo=express&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
-**A comprehensive, full-stack farm management platform designed to digitize, organize, and optimize large-scale agricultural operations.**
+[**🚀 Live Demo**](https://khamar-bari-v2-rho.vercel.app/) · [**⚙️ API Server**](https://khamar-bari-backend.vercel.app/) · [**💻 Source Code**](https://github.com/AhsanCS64/KhamarBari_v2)
 
-[**Live Application**](https://khamar-bari-v2-rho.vercel.app/) · [**GitHub Repository**](https://github.com/AhsanCS64/KhamarBari_v2)
+</div>
 
 ---
 
-## Overview
+## 📑 Table of Contents
 
-**KhamarBari** is a web-based farm management solution developed to address the operational challenges of managing diversified and industrial-scale agricultural enterprises.
+- [Why KhamarBari?](#-why-khamarbari)
+- [Screenshots](#-screenshots)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Getting Started](#-getting-started)
+- [API Overview](#-api-overview)
+- [Deployment](#-deployment)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [Author](#-author)
 
-Traditional farm management often involves fragmented records, manual calculations, disconnected operational processes, and limited visibility into production and financial activities.
+---
 
-KhamarBari brings these activities together through a centralized platform, enabling farm operators to manage **livestock, poultry, fisheries, workforce activities, production records, financial transactions, and multiple farm branches**.
+## 🌾 Why KhamarBari?
 
-Built with the **MERN stack (MongoDB, Express.js, React, and Node.js)**, the system demonstrates modern full-stack development through a scalable, API-driven architecture.
+Many farms in Bangladesh still run on paper ledgers, spreadsheets, and memory. The result is fragmented records, manual calculations, and little visibility into what is being produced, spent, and earned.
 
-## Key Features
+**KhamarBari** replaces that patchwork with a single, API-driven web platform. Farm operators can manage every part of a diversified operation, from the barn to the pond to the books, and across multiple branches, from one place.
 
-### 🐄 1. Livestock Management
-
-- Manage livestock records and animal populations.
-- Monitor farm-level livestock inventories.
-- Maintain production records, including milk output.
-- Organize livestock information across farming operations.
-
-### 🐓 2. Poultry Management
-
-- Maintain poultry population records.
-- Track daily egg production.
-- Manage poultry inventory and operational data.
-- Monitor production activities over time.
-
-### 🐟 3. Fisheries Management
-
-- Manage fish farming operations and pond information.
-- Maintain fisheries-related production records.
-- Organize pond-level operational information.
-- Monitor fisheries activities within the centralized system.
-
-### 📊 4. Production Monitoring
-
-- Record daily agricultural production.
-- Track milk, egg, and other relevant production outputs.
-- Maintain historical production information.
-- Support production forecasting and operational planning.
-
-### 👷 5. Workforce Management
-
-- Maintain worker information.
-- Organize workforce records.
-- Support farm-level employee administration.
-- Centralize workforce-related operational data.
-
-### 💰 6. Financial & Order Management
-
-- Manage operational bills and expense records.
-- Organize farm-related orders.
-- Maintain financial transaction information.
-- Support visibility into farm expenditure and commercial activities.
-
-### 🏢 7. Multi-Branch Management
-
-- Organize farm operations across multiple branches.
-- Maintain branch-specific operational records.
-- Support centralized administration of distributed farming activities.
-
-### 📈 8. Production Forecasting
-
-- Support forecasting of agricultural production.
-- Use historical production information to assist planning.
-- Provide a foundation for future predictive analytics and data-driven agricultural management.
-
-## Technology Stack
-
-| Component | Technology |
+| Before | With KhamarBari |
 |---|---|
-| Frontend | React.js |
-| Build Tool | Vite |
-| Backend | Node.js, Express.js |
-| Database | MongoDB Atlas |
-| Styling | Tailwind CSS |
-| Animations | Framer Motion |
-| Programming Language | JavaScript |
-| API Architecture | REST |
-| Deployment | Vercel |
-| Version Control | Git & GitHub |
+| Scattered notebooks and spreadsheets | One centralized system |
+| Manual totals and tallies | Structured, queryable records |
+| No cross-branch visibility | Branch-level and farm-wide views |
+| Guesswork in planning | Historical data to support forecasting |
 
-## System Architecture
+---
 
-KhamarBari follows a client-server architecture with separate frontend and backend applications.
+## 📸 Screenshots
 
-```text
-                   ┌─────────────────────────┐
-                   │       Farm Users        │
-                   │       Web Browser       │
-                   └────────────┬────────────┘
-                                │
-                                ▼
-                   ┌─────────────────────────┐
-                   │      React Frontend     │
-                   │                         │
-                   │   Vite + Tailwind CSS   │
-                   │      Framer Motion      │
-                   └────────────┬────────────┘
-                                │
-                          HTTPS / REST
-                                │
-                                ▼
-                   ┌─────────────────────────┐
-                   │      Express.js API     │
-                   │                         │
-                   │   Authentication        │
-                   │   Business Logic        │
-                   │   Request Processing    │
-                   └────────────┬────────────┘
-                                │
-                                ▼
-                   ┌─────────────────────────┐
-                   │      MongoDB Atlas      │
-                   │                         │
-                   │   Farm Records          │
-                   │   Production Data       │
-                   │   Workers & Branches    │
-                   │   Orders & Expenses     │
-                   └─────────────────────────┘
+<!-- Add screenshots to /docs/screenshots and update the paths below. -->
+
+| Dashboard | Production Records |
+|:---:|:---:|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Production](docs/screenshots/production.png) |
+
+| Livestock | Fisheries |
+|:---:|:---:|
+| ![Livestock](docs/screenshots/livestock.png) | ![Fisheries](docs/screenshots/fisheries.png) |
+
+---
+
+## ✨ Features
+
+| Module | What it does |
+|---|---|
+| 🐄 **Livestock** | Animal records and populations, farm-level inventory, and milk output tracking |
+| 🐓 **Poultry** | Flock records, daily egg production, and poultry inventory |
+| 🐟 **Fisheries** | Pond information, fish farming operations, and fisheries production records |
+| 📊 **Production Monitoring** | Daily logging of milk, eggs, and other outputs with full historical records |
+| 👷 **Workforce** | Worker profiles and farm-level employee administration |
+| 💰 **Finance & Orders** | Bills, expenses, orders, and transaction records for spending visibility |
+| 🏢 **Multi-Branch** | Branch-specific records with centralized administration |
+| 📈 **Forecasting** | Planning support built on historical production data |
+
+All modules share one authenticated backend and one database, so records stay consistent across the whole system.
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React, Vite, Tailwind CSS, Framer Motion |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB Atlas |
+| **Auth** | JWT-based authentication |
+| **API** | REST over HTTPS |
+| **Hosting** | Vercel (frontend and backend) |
+| **Tooling** | JavaScript, Git & GitHub |
+
+---
+
+## 🏗 Architecture
+
+KhamarBari uses a client–server architecture with a separately deployed frontend and backend.
+
+```mermaid
+flowchart TD
+    U["👤 Farm Users<br/>(Web Browser)"] --> F["⚛️ React Frontend<br/>Vite · Tailwind CSS · Framer Motion"]
+    F -- "HTTPS / REST" --> A["🟢 Express.js API<br/>Authentication · Business Logic · Request Processing"]
+    A --> D[("🍃 MongoDB Atlas<br/>Farm records · Production · Workers & Branches · Orders & Expenses")]
 ```
 
-### Architecture Highlights
+**Design highlights**
 
-- **Frontend–Backend Separation:** Independent React frontend and Express backend.
-- **RESTful Communication:** API-based interaction between client and server.
-- **Cloud Database:** MongoDB Atlas provides persistent data storage.
-- **Modular Functional Design:** Different agricultural operations are organized into functional modules.
-- **Cloud Deployment:** Both application layers are deployed using Vercel.
+- **Separation of concerns:** independent React and Express applications.
+- **Modular design:** each agricultural domain is its own functional module.
+- **Stateless API:** token-based auth keeps the backend easy to scale and deploy.
+- **Managed cloud data:** MongoDB Atlas handles persistence and availability.
 
-## Getting Started
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-Ensure the following are installed:
+- [Node.js](https://nodejs.org/) (LTS recommended) and npm
+- [Git](https://git-scm.com/)
+- A [MongoDB Atlas](https://www.mongodb.com/atlas) account or any compatible MongoDB instance
 
-- Node.js
-- npm
-- Git
-- MongoDB Atlas account or a compatible MongoDB instance
-
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/AhsanCS64/KhamarBari_v2.git
 cd KhamarBari_v2
 ```
 
-### 2. Install Dependencies
+### 2. Install dependencies
 
-Navigate to the frontend and backend directories and install their respective dependencies.
+Run this in **each** application directory (frontend and backend):
 
 ```bash
 npm install
 ```
 
-Execute this command separately in each application directory containing a `package.json` file.
+### 3. Configure environment variables
 
-### 3. Configure Environment Variables
-
-Configure the backend with the appropriate MongoDB connection string, authentication secrets, and other environment variables required by the application.
-
-Example:
+**Backend** (`.env`)
 
 ```env
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_secure_secret
+JWT_SECRET=your_secure_random_secret
 PORT=5000
 ```
 
-Configure the frontend with the backend API endpoint.
+**Frontend** (`.env`)
 
 ```env
 VITE_API_URL=http://localhost:5000
 ```
 
-> Environment variable names are illustrative. Refer to the source code for the exact configuration keys.
+> ⚠️ Never commit `.env` files. Use a long, random value for `JWT_SECRET`.
 
-### 4. Start the Development Servers
+### 4. Run the development servers
 
-For the backend:
+In two terminals:
 
 ```bash
+# Terminal 1: backend
+cd <backend-directory>
 npm run dev
 ```
 
-For the frontend:
-
 ```bash
+# Terminal 2: frontend
+cd <frontend-directory>
 npm run dev
 ```
 
-If the backend does not define a development script, use the appropriate start command specified in its `package.json`.
+If the backend has no `dev` script, use the start command in its `package.json`.
 
-### 5. Access the Application
+### 5. Open the app
 
-Open the local URL displayed by Vite, typically:
-
-```text
-http://localhost:5173
-```
-
-## Deployment
-
-KhamarBari uses a cloud-hosted architecture with its frontend and backend deployed separately.
-
-| Service | Platform | Deployment |
-|---|---|---|
-| Frontend | Vercel | [Live Application](https://khamar-bari-v2-rho.vercel.app/) |
-| Backend | Vercel | [API Server](https://khamar-bari-backend.vercel.app/) |
-| Database | MongoDB Atlas | Managed Cloud Database |
-
-### Backend API
-
-The backend follows an `/api` route prefix.
-
-For example, the authentication login endpoint is:
-
-```http
-POST /api/auth/login
-```
-
-The deployed equivalent is:
-
-```text
-https://khamar-bari-backend.vercel.app/api/auth/login
-```
-
-Additional endpoints are organized according to their associated application modules.
-
-## Software Engineering Concepts
-
-KhamarBari demonstrates practical experience with:
-
-- Full-stack web application development using the MERN stack.
-- REST API design and frontend–backend integration.
-- NoSQL database management using MongoDB.
-- Authentication workflows and server-side business logic.
-- Component-based interface development with React.
-- Responsive UI implementation using Tailwind CSS.
-- Client-side animations and interactive UI design.
-- Cloud database integration and deployment.
-- Managing application state and asynchronous API requests.
-- Designing software for diversified agricultural operations.
-
-## Future Enhancements
-
-Potential directions for further development include:
-
-- AI-powered production forecasting using historical farm data.
-- Automated inventory alerts and resource monitoring.
-- IoT integration for temperature, humidity, and water-quality sensors.
-- Advanced financial reporting and profitability analysis.
-- Predictive livestock health monitoring.
-- Mobile application support.
-- Interactive analytics dashboards.
-- Automated reporting and data export.
-
-## Project Motivation
-
-Agriculture remains a critical component of Bangladesh's economy, yet many farms continue to rely on manually maintained records and disconnected management practices.
-
-**KhamarBari aims to bridge the gap between traditional agricultural operations and modern software engineering.**
-
-By integrating diverse farm activities into a single platform, the project explores how digital systems can improve operational organization, information accessibility, and data-driven decision-making.
-
-## Author
-
-**H. M. Ahsan Habib Kushal**  
-Computer Science and Engineering  
-National Institute of Textile Engineering and Research (NITER), University of Dhaka
-
-**GitHub:** https://github.com/AhsanCS64  
-**Portfolio:** https://ahsanhabibkushal.vercel.app/
+Visit **http://localhost:5173** (the default Vite URL).
 
 ---
 
-**KhamarBari — Bringing Agriculture and Technology Together.**
+## 🔌 API Overview
 
-*Designed and developed as a practical full-stack software engineering project focused on modernizing agricultural management.*
+All backend routes are served under the `/api` prefix.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/login` | Authenticate a user and receive a token |
+
+Example against the deployed API:
+
+```bash
+curl -X POST https://khamar-bari-backend.vercel.app/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@example.com", "password": "your_password"}'
+```
+
+<!-- Add the remaining module endpoints (livestock, poultry, fisheries, production, workers, orders, branches) here as the API stabilizes. -->
+
+---
+
+## ☁️ Deployment
+
+| Service | Platform | Link |
+|---|---|---|
+| Frontend | Vercel | [khamar-bari-v2-rho.vercel.app](https://khamar-bari-v2-rho.vercel.app/) |
+| Backend | Vercel | [khamar-bari-backend.vercel.app](https://khamar-bari-backend.vercel.app/) |
+| Database | MongoDB Atlas | Managed cloud database |
+
+When deploying, set the same environment variables from the setup step in each Vercel project's settings, and point `VITE_API_URL` at the deployed backend URL.
+
+---
+
+## 🗺 Roadmap
+
+- [x] Livestock, poultry, and fisheries management
+- [x] Daily production tracking
+- [x] Workforce, orders, and expense management
+- [x] Multi-branch support
+- [x] Production forecasting foundation
+- [ ] AI-powered forecasting using historical farm data
+- [ ] Automated inventory alerts and resource monitoring
+- [ ] IoT integration (temperature, humidity, water-quality sensors)
+- [ ] Advanced financial reporting and profitability analysis
+- [ ] Predictive livestock health monitoring
+- [ ] Interactive analytics dashboards
+- [ ] Automated reporting and data export
+- [ ] Mobile application
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome.
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m "Add your feature"`
+4. Push the branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+---
+
+## 👤 Author
+
+**H. M. Ahsan Habib Kushal**
+Computer Science and Engineering, National Institute of Textile Engineering and Research (NITER), University of Dhaka
+
+[![GitHub](https://img.shields.io/badge/GitHub-AhsanCS64-181717?style=flat-square&logo=github)](https://github.com/AhsanCS64)
+[![Portfolio](https://img.shields.io/badge/Portfolio-ahsanhabibkushal-4CAF50?style=flat-square&logo=vercel&logoColor=white)](https://ahsanhabibkushal.vercel.app/)
+
+---
+
+<div align="center">
+
+**KhamarBari: Bringing Agriculture and Technology Together** 🌱
+
+</div>
