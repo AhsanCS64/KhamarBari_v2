@@ -1,6 +1,9 @@
 import { useAuthStore } from '@/store/authStore'
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '')
+const API_URL = (
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api')
+).replace(/\/+$/, '')
 
 function normalizeIds(value) {
   if (Array.isArray(value)) return value.map(normalizeIds)
@@ -15,14 +18,28 @@ function normalizeIds(value) {
 
 export async function apiFetch(endpoint, options = {}) {
   const token = useAuthStore.getState().token
-  const response = await fetch(`${API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`, {
-    ...options,
-    headers: {
-      ...(options.body && { 'Content-Type': 'application/json' }),
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    },
-  })
+  const url = `${API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`
+
+  let response
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...(options.body && { 'Content-Type': 'application/json' }),
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+      },
+    })
+  } catch (netErr) {
+    console.error(`[API] Failed to fetch from ${url}:`, netErr)
+    throw new Error(
+      `Unable to connect to server at ${url}. ${
+        url.includes('localhost')
+          ? 'Production build is pointing to localhost. Please set VITE_API_URL in your Vercel Environment Variables.'
+          : 'Please check your backend deployment or internet connection.'
+      }`
+    )
+  }
 
   const text = await response.text()
   let data = null
