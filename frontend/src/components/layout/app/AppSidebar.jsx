@@ -135,8 +135,8 @@ function SidebarContent({ t, closeSidebar, navItems, mobile = false, collapsed =
           className="group flex min-w-0 items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#d9f88c]/60"
           title={t('brand.name')}
         >
-          <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#e6fba4] to-[#b6e463] shadow-[0_6px_20px_rgba(181,230,97,0.35),inset_0_1px_0_rgba(255,255,255,0.7)] ring-1 ring-white/40 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
-            <img src="/sprout.svg" alt="KhamarBari" className="h-9 w-9" />
+          <span className="relative grid h-[3.15rem] w-[3.15rem] shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#e6fba4] to-[#b6e463] shadow-[0_6px_20px_rgba(181,230,97,0.35),inset_0_1px_0_rgba(255,255,255,0.7)] ring-1 ring-white/40 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
+            <img src="/sprout.svg" alt="KhamarBari" className="h-[2.6rem] w-[2.6rem] object-contain" />
           </span>
 
           {!collapsed && (
@@ -192,6 +192,66 @@ function SidebarContent({ t, closeSidebar, navItems, mobile = false, collapsed =
               <div className="space-y-1">
                 {group.items.map(({ to, key, icon: Icon, end }) => {
                   const label = t(`sidebar.${key}`)
+                  const navLinkContent = (
+                    <NavLink
+                      to={to}
+                      end={end}
+                      onClick={closeSidebar}
+                      onMouseEnter={showTip(label)}
+                      onMouseLeave={hideTip}
+                      onFocus={showTip(label)}
+                      onBlur={hideTip}
+                      aria-label={collapsed ? label : undefined}
+                      className={({ isActive }) =>
+                        cn(
+                          'group relative isolate flex items-center rounded-xl text-[13px] font-medium outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#d9f88c]/60',
+                          collapsed ? 'mx-auto h-11 w-11 justify-center' : 'h-10 gap-3 px-2.5',
+                          isActive ? 'font-semibold text-white' : 'text-[#c5d9c6]/75 hover:text-white'
+                        )
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          {/* Active glass pill with a lime edge */}
+                          {isActive && (
+                            mobile ? (
+                              <span className="absolute inset-0 z-0 rounded-xl bg-white/[0.1] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_24px_rgba(0,0,0,0.18)] ring-1 ring-inset ring-white/[0.14]">
+                                <span className="absolute bottom-2.5 left-0 top-2.5 w-[3px] rounded-r-full bg-[#d9f88c] shadow-[0_0_12px_rgba(217,248,140,0.9)]" />
+                              </span>
+                            ) : (
+                              <motion.span
+                                layoutId={collapsed ? 'collapsed-sidebar-active' : 'desktop-sidebar-active'}
+                                className="absolute inset-0 z-0 rounded-xl bg-white/[0.1] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_24px_rgba(0,0,0,0.18)] ring-1 ring-inset ring-white/[0.14]"
+                                transition={activeTransition}
+                              >
+                                <span className="absolute bottom-2.5 left-0 top-2.5 w-[3px] rounded-r-full bg-[#d9f88c] shadow-[0_0_12px_rgba(217,248,140,0.9)]" />
+                              </motion.span>
+                            )
+                          )}
+
+                          <span
+                            className={cn(
+                              'relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-all duration-200',
+                              isActive
+                                ? 'bg-[#d9f88c] text-[#0d2a1a] shadow-[0_4px_14px_rgba(217,248,140,0.4)]'
+                                : 'bg-white/[0.05] text-[#a1c2a0] group-hover:scale-110 group-hover:bg-white/10 group-hover:text-[#d5f786]'
+                            )}
+                          >
+                            <Icon className="h-4 w-4" strokeWidth={isActive ? 2.1 : 1.75} />
+                          </span>
+
+                          {!collapsed && (
+                            <span className="relative z-10 truncate tracking-normal">{label}</span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  )
+
+                  if (mobile) {
+                    return <div key={to}>{navLinkContent}</div>
+                  }
+
                   return (
                     <motion.div
                       key={to}
@@ -199,53 +259,7 @@ function SidebarContent({ t, closeSidebar, navItems, mobile = false, collapsed =
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.35, delay: 0.04 + order[to] * 0.03, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      <NavLink
-                        to={to}
-                        end={end}
-                        onClick={closeSidebar}
-                        onMouseEnter={showTip(label)}
-                        onMouseLeave={hideTip}
-                        onFocus={showTip(label)}
-                        onBlur={hideTip}
-                        aria-label={collapsed ? label : undefined}
-                        className={({ isActive }) =>
-                          cn(
-                            'group relative isolate flex items-center rounded-xl text-[13px] font-medium outline-none transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[#d9f88c]/60',
-                            collapsed ? 'mx-auto h-11 w-11 justify-center' : 'h-10 gap-3 px-2.5',
-                            isActive ? 'font-semibold text-white' : 'text-[#c5d9c6]/75 hover:text-white'
-                          )
-                        }
-                      >
-                        {({ isActive }) => (
-                          <>
-                            {/* Active glass pill with a lime edge */}
-                            {isActive && (
-                              <motion.span
-                                layoutId={mobile ? 'mobile-sidebar-active' : collapsed ? 'collapsed-sidebar-active' : 'desktop-sidebar-active'}
-                                className="absolute inset-0 z-0 rounded-xl bg-white/[0.1] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_24px_rgba(0,0,0,0.18)] ring-1 ring-inset ring-white/[0.14]"
-                                transition={activeTransition}
-                              >
-                                <span className="absolute bottom-2.5 left-0 top-2.5 w-[3px] rounded-r-full bg-[#d9f88c] shadow-[0_0_12px_rgba(217,248,140,0.9)]" />
-                              </motion.span>
-                            )}
-
-                            <span
-                              className={cn(
-                                'relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-all duration-200',
-                                isActive
-                                  ? 'bg-[#d9f88c] text-[#0d2a1a] shadow-[0_4px_14px_rgba(217,248,140,0.4)]'
-                                  : 'bg-white/[0.05] text-[#a1c2a0] group-hover:scale-110 group-hover:bg-white/10 group-hover:text-[#d5f786]'
-                              )}
-                            >
-                              <Icon className="h-4 w-4" strokeWidth={isActive ? 2.1 : 1.75} />
-                            </span>
-
-                            {!collapsed && (
-                              <span className="relative z-10 truncate tracking-normal">{label}</span>
-                            )}
-                          </>
-                        )}
-                      </NavLink>
+                      {navLinkContent}
                     </motion.div>
                   )
                 })}
@@ -379,39 +393,33 @@ export default function AppSidebar() {
         </button>
       </aside>
 
-      {/* Mobile drawer */}
-      <AnimatePresence initial={false}>
-        {sidebarOpen && (
-          <>
-            <motion.div
-              key="sidebar-backdrop"
-              aria-label="Close navigation"
-              role="button"
-              tabIndex={0}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={closeSidebar}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && closeSidebar()}
-            />
-            <motion.aside
-              key="sidebar-drawer"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Navigation"
-              className="fixed left-0 top-0 z-50 h-dvh w-[min(76vw,16rem)] max-w-[280px] shadow-[20px_0_60px_rgba(0,0,0,0.45)] md:hidden"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ duration: reducedMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <SidebarContent t={t} closeSidebar={closeSidebar} navItems={visibleNav} mobile />
-            </motion.aside>
-          </>
+      {/* Mobile backdrop */}
+      <div
+        aria-label="Close navigation"
+        role="button"
+        tabIndex={0}
+        aria-hidden={!sidebarOpen}
+        className={cn(
+          'fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden',
+          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
-      </AnimatePresence>
+        onClick={closeSidebar}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && closeSidebar()}
+      />
+
+      {/* Mobile drawer */}
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation"
+        aria-hidden={!sidebarOpen}
+        className={cn(
+          'fixed left-0 top-0 z-50 h-dvh w-[min(76vw,16rem)] max-w-[280px] shadow-[20px_0_60px_rgba(0,0,0,0.45)] md:hidden transition-transform duration-300 ease-out will-change-transform',
+          sidebarOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none'
+        )}
+      >
+        <SidebarContent t={t} closeSidebar={closeSidebar} navItems={visibleNav} mobile />
+      </aside>
     </>
   )
 }

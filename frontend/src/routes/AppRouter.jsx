@@ -1,6 +1,11 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { createBrowserRouter, RouterProvider, Navigate, useRouteError } from 'react-router-dom'
 import PublicLayout from '@/components/layout/PublicLayout'
+import ProtectedRoute from '@/routes/ProtectedRoute'
+import PublicOnlyRoute from '@/routes/PublicOnlyRoute'
+import SproutLoader from '@/components/common/SproutLoader'
+import { useAuthStore } from '@/store/authStore'
+
 const AppLayout = lazy(() => import('@/components/layout/app/AppLayout'))
 const HomePage = lazy(() => import('@/pages/public/HomePage'))
 const AboutPage = lazy(() => import('@/pages/public/AboutPage'))
@@ -21,13 +26,22 @@ const BranchesPage = lazy(() => import('@/pages/app/BranchesPage'))
 const SettingsPage = lazy(() => import('@/pages/app/SettingsPage'))
 const ProfilePage = lazy(() => import('@/pages/app/ProfilePage'))
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'))
-import ProtectedRoute from '@/routes/ProtectedRoute'
-import PublicOnlyRoute from '@/routes/PublicOnlyRoute'
-import { useAuthStore } from '@/store/authStore'
 
 function RouteError() {
   const error = useRouteError()
-  return <div className="route-loading"><div className="max-w-md rounded-2xl border border-forest-100 bg-white p-8 text-center shadow-soft"><h1 className="text-xl font-bold">This page could not load</h1><p className="mt-3 text-sm text-forest-700">Please reload to try again. Your saved farm records are unaffected.</p><button className="mt-5 rounded-xl bg-forest px-5 py-3 text-white" onClick={() => window.location.reload()}>Reload page</button><a className="ml-4 text-sm underline" href="/">Go home</a>{import.meta.env.DEV && <p className="mt-4 break-words text-xs">{error?.message}</p>}</div></div>
+  return (
+    <div className="flex min-h-[65vh] items-center justify-center p-4">
+      <div className="max-w-md rounded-2xl border border-forest-100 bg-white p-8 text-center shadow-soft">
+        <h1 className="text-xl font-bold text-forest-900">This page could not load</h1>
+        <p className="mt-3 text-sm text-forest-700">Please reload to try again. Your saved farm records are unaffected.</p>
+        <button className="mt-5 rounded-xl bg-forest px-5 py-3 font-semibold text-white transition-opacity hover:opacity-90" onClick={() => window.location.reload()}>
+          Reload page
+        </button>
+        <a className="ml-4 text-sm font-medium text-forest-700 underline" href="/">Go home</a>
+        {import.meta.env.DEV && <p className="mt-4 break-words text-xs text-red-600">{error?.message}</p>}
+      </div>
+    </div>
+  )
 }
 
 const router = createBrowserRouter([
@@ -70,5 +84,16 @@ const router = createBrowserRouter([
 export default function AppRouter() {
   const hydrate = useAuthStore((s) => s.hydrate)
   useEffect(() => { hydrate() }, [hydrate])
-  return <Suspense fallback={<div className="route-loading" role="status"><img src="/sprout.svg" alt="" /><span>Loading KhamarBari...</span></div>}><RouterProvider router={router} /></Suspense>
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col items-center justify-center bg-[#fbfdfa]" role="status">
+          <SproutLoader label="Loading KhamarBari…" size="xl" />
+        </div>
+      }
+    >
+      <RouterProvider router={router} />
+    </Suspense>
+  )
 }

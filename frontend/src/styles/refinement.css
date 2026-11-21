@@ -19,8 +19,8 @@ button:not(:disabled), select { cursor: pointer; }
 .workspace-main tbody tr:hover { background: #f5f8f1; }
 .workspace-main input, .workspace-main select { min-height: 42px; }
 .card-soft { border-radius: 20px; border-color: #dce7df; box-shadow: var(--shadow-card); }
-.route-loading { min-height: 65vh; display: flex; gap: 14px; align-items: center; justify-content: center; color: #24583b; font-size: 14px; }
-.route-loading img { width: 40px; }
+.route-loading { min-height: 65vh; display: flex; flex-direction: column; gap: 18px; align-items: center; justify-content: center; color: #174c34; font-size: 15px; font-weight: 600; }
+.route-loading img { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 10px 24px rgba(36,92,58,0.2)); }
 .skip-link { position: fixed; top: 12px; left: 12px; z-index: 100; transform: translateY(-160%); padding: 12px 18px; border-radius: 12px; background: #143e2b; color: white; }
 .skip-link:focus { transform: translateY(0); }
 .home-hero-container { min-height: min(790px, 95vh); margin: 12px; border-radius: 28px; }
